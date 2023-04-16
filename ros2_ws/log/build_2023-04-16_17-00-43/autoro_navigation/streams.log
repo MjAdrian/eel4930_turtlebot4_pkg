@@ -1,0 +1,30 @@
+[0.499s] Invoking command in '/home/mshen/ros2_ws/src/autoro_navigation': PYTHONPATH=/home/mshen/ros2_ws/build/autoro_navigation/prefix_override:/home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages:${PYTHONPATH} WSLENV=ELECTRON_RUN_AS_NODE/w: /usr/bin/python3 setup.py egg_info --egg-base ../../build/autoro_navigation build --build-base /home/mshen/ros2_ws/build/autoro_navigation/build install --record /home/mshen/ros2_ws/build/autoro_navigation/install.log --single-version-externally-managed
+[0.633s] running egg_info
+[0.633s] writing ../../build/autoro_navigation/autoro_navigation.egg-info/PKG-INFO
+[0.634s] writing dependency_links to ../../build/autoro_navigation/autoro_navigation.egg-info/dependency_links.txt
+[0.634s] writing entry points to ../../build/autoro_navigation/autoro_navigation.egg-info/entry_points.txt
+[0.634s] writing requirements to ../../build/autoro_navigation/autoro_navigation.egg-info/requires.txt
+[0.634s] writing top-level names to ../../build/autoro_navigation/autoro_navigation.egg-info/top_level.txt
+[0.635s] reading manifest file '../../build/autoro_navigation/autoro_navigation.egg-info/SOURCES.txt'
+[0.636s] writing manifest file '../../build/autoro_navigation/autoro_navigation.egg-info/SOURCES.txt'
+[0.636s] running build
+[0.636s] running build_py
+[0.636s] copying autoro_navigation/get_costmap_test.py -> /home/mshen/ros2_ws/build/autoro_navigation/build/lib/autoro_navigation
+[0.636s] copying autoro_navigation/occupancy_grid_test.py -> /home/mshen/ros2_ws/build/autoro_navigation/build/lib/autoro_navigation
+[0.636s] running install
+[0.637s] running install_lib
+[0.637s] copying /home/mshen/ros2_ws/build/autoro_navigation/build/lib/autoro_navigation/get_costmap_test.py -> /home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages/autoro_navigation
+[0.637s] copying /home/mshen/ros2_ws/build/autoro_navigation/build/lib/autoro_navigation/occupancy_grid_test.py -> /home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages/autoro_navigation
+[0.638s] byte-compiling /home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages/autoro_navigation/get_costmap_test.py to get_costmap_test.cpython-310.pyc
+[0.638s] byte-compiling /home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages/autoro_navigation/occupancy_grid_test.py to occupancy_grid_test.cpython-310.pyc
+[0.638s] running install_data
+[0.639s] running install_egg_info
+[0.640s] removing '/home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages/autoro_navigation-0.0.0-py3.10.egg-info' (and everything under it)
+[0.640s] Copying ../../build/autoro_navigation/autoro_navigation.egg-info to /home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages/autoro_navigation-0.0.0-py3.10.egg-info
+[0.640s] running install_scripts
+[0.651s] Installing costmap_test script to /home/mshen/ros2_ws/install/autoro_navigation/lib/autoro_navigation
+[0.651s] Installing get_costmap_test script to /home/mshen/ros2_ws/install/autoro_navigation/lib/autoro_navigation
+[0.651s] Installing talker script to /home/mshen/ros2_ws/install/autoro_navigation/lib/autoro_navigation
+[0.651s] Installing waypoint_test script to /home/mshen/ros2_ws/install/autoro_navigation/lib/autoro_navigation
+[0.651s] writing list of installed files to '/home/mshen/ros2_ws/build/autoro_navigation/install.log'
+[0.678s] Invoked command in '/home/mshen/ros2_ws/src/autoro_navigation' returned '0': PYTHONPATH=/home/mshen/ros2_ws/build/autoro_navigation/prefix_override:/home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages:${PYTHONPATH} WSLENV=ELECTRON_RUN_AS_NODE/w: /usr/bin/python3 setup.py egg_info --egg-base ../../build/autoro_navigation build --build-base /home/mshen/ros2_ws/build/autoro_navigation/build install --record /home/mshen/ros2_ws/build/autoro_navigation/install.log --single-version-externally-managed

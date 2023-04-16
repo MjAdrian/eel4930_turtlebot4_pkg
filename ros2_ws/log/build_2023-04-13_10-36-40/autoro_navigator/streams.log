@@ -1,0 +1,43 @@
+[0.230s] Invoking command in '/home/mshen/ros2_ws/src/autoro_navigator': PYTHONPATH=/home/mshen/ros2_ws/build/autoro_navigator/prefix_override:/home/mshen/ros2_ws/install/autoro_navigator/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/autoro_navigator build --build-base /home/mshen/ros2_ws/build/autoro_navigator/build install --record /home/mshen/ros2_ws/build/autoro_navigator/install.log --single-version-externally-managed
+[0.308s] running egg_info
+[0.308s] creating ../../build/autoro_navigator/autoro_navigator.egg-info
+[0.308s] writing ../../build/autoro_navigator/autoro_navigator.egg-info/PKG-INFO
+[0.308s] writing dependency_links to ../../build/autoro_navigator/autoro_navigator.egg-info/dependency_links.txt
+[0.308s] writing entry points to ../../build/autoro_navigator/autoro_navigator.egg-info/entry_points.txt
+[0.308s] writing requirements to ../../build/autoro_navigator/autoro_navigator.egg-info/requires.txt
+[0.308s] writing top-level names to ../../build/autoro_navigator/autoro_navigator.egg-info/top_level.txt
+[0.308s] writing manifest file '../../build/autoro_navigator/autoro_navigator.egg-info/SOURCES.txt'
+[0.309s] reading manifest file '../../build/autoro_navigator/autoro_navigator.egg-info/SOURCES.txt'
+[0.309s] writing manifest file '../../build/autoro_navigator/autoro_navigator.egg-info/SOURCES.txt'
+[0.309s] running build
+[0.309s] running build_py
+[0.309s] creating /home/mshen/ros2_ws/build/autoro_navigator/build
+[0.309s] creating /home/mshen/ros2_ws/build/autoro_navigator/build/lib
+[0.309s] creating /home/mshen/ros2_ws/build/autoro_navigator/build/lib/autoro_navigator
+[0.310s] copying autoro_navigator/navigation_node.py -> /home/mshen/ros2_ws/build/autoro_navigator/build/lib/autoro_navigator
+[0.310s] copying autoro_navigator/__init__.py -> /home/mshen/ros2_ws/build/autoro_navigator/build/lib/autoro_navigator
+[0.310s] running install
+[0.310s] /usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+[0.310s]   warnings.warn(
+[0.310s] running install_lib
+[0.310s] creating /home/mshen/ros2_ws/install/autoro_navigator/lib/python3.10/site-packages/autoro_navigator
+[0.310s] copying /home/mshen/ros2_ws/build/autoro_navigator/build/lib/autoro_navigator/navigation_node.py -> /home/mshen/ros2_ws/install/autoro_navigator/lib/python3.10/site-packages/autoro_navigator
+[0.311s] copying /home/mshen/ros2_ws/build/autoro_navigator/build/lib/autoro_navigator/__init__.py -> /home/mshen/ros2_ws/install/autoro_navigator/lib/python3.10/site-packages/autoro_navigator
+[0.311s] byte-compiling /home/mshen/ros2_ws/install/autoro_navigator/lib/python3.10/site-packages/autoro_navigator/navigation_node.py to navigation_node.cpython-310.pyc
+[0.311s]   File "/home/mshen/ros2_ws/install/autoro_navigator/lib/python3.10/site-packages/autoro_navigator/navigation_node.py", line 15
+[0.311s]     'costmap'
+[0.311s]     ^^^^^^^^^^^^^^^^^^^^^
+[0.311s] SyntaxError: invalid syntax. Perhaps you forgot a comma?
+[0.311s] 
+[0.311s] byte-compiling /home/mshen/ros2_ws/install/autoro_navigator/lib/python3.10/site-packages/autoro_navigator/__init__.py to __init__.cpython-310.pyc
+[0.311s] running install_data
+[0.311s] creating /home/mshen/ros2_ws/install/autoro_navigator/share/ament_index
+[0.311s] creating /home/mshen/ros2_ws/install/autoro_navigator/share/ament_index/resource_index
+[0.311s] creating /home/mshen/ros2_ws/install/autoro_navigator/share/ament_index/resource_index/packages
+[0.311s] copying resource/autoro_navigator -> /home/mshen/ros2_ws/install/autoro_navigator/share/ament_index/resource_index/packages
+[0.311s] copying package.xml -> /home/mshen/ros2_ws/install/autoro_navigator/share/autoro_navigator
+[0.311s] running install_egg_info
+[0.312s] Copying ../../build/autoro_navigator/autoro_navigator.egg-info to /home/mshen/ros2_ws/install/autoro_navigator/lib/python3.10/site-packages/autoro_navigator-0.0.0-py3.10.egg-info
+[0.312s] running install_scripts
+[0.321s] writing list of installed files to '/home/mshen/ros2_ws/build/autoro_navigator/install.log'
+[0.331s] Invoked command in '/home/mshen/ros2_ws/src/autoro_navigator' returned '0': PYTHONPATH=/home/mshen/ros2_ws/build/autoro_navigator/prefix_override:/home/mshen/ros2_ws/install/autoro_navigator/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/autoro_navigator build --build-base /home/mshen/ros2_ws/build/autoro_navigator/build install --record /home/mshen/ros2_ws/build/autoro_navigator/install.log --single-version-externally-managed

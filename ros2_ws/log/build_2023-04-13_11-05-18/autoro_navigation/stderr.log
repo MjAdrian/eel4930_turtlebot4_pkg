@@ -1,0 +1,5 @@
+  File "/home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages/autoro_navigation/navigation_node.py", line 11
+    'costmap'
+    ^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: invalid syntax. Perhaps you forgot a comma?
+

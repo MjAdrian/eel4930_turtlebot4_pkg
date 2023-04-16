@@ -1,0 +1,21 @@
+[0.250s] Invoking command in '/home/mshen/ros2_ws/src/autoro_navigation': PYTHONPATH=/home/mshen/ros2_ws/build/autoro_navigation/prefix_override:/home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/autoro_navigation build --build-base /home/mshen/ros2_ws/build/autoro_navigation/build install --record /home/mshen/ros2_ws/build/autoro_navigation/install.log --single-version-externally-managed
+[0.346s] running egg_info
+[0.346s] writing ../../build/autoro_navigation/autoro_navigation.egg-info/PKG-INFO
+[0.346s] writing dependency_links to ../../build/autoro_navigation/autoro_navigation.egg-info/dependency_links.txt
+[0.346s] writing entry points to ../../build/autoro_navigation/autoro_navigation.egg-info/entry_points.txt
+[0.347s] writing requirements to ../../build/autoro_navigation/autoro_navigation.egg-info/requires.txt
+[0.347s] writing top-level names to ../../build/autoro_navigation/autoro_navigation.egg-info/top_level.txt
+[0.347s] reading manifest file '../../build/autoro_navigation/autoro_navigation.egg-info/SOURCES.txt'
+[0.348s] writing manifest file '../../build/autoro_navigation/autoro_navigation.egg-info/SOURCES.txt'
+[0.348s] running build
+[0.348s] running build_py
+[0.348s] running install
+[0.348s] running install_lib
+[0.348s] running install_data
+[0.349s] running install_egg_info
+[0.349s] removing '/home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages/autoro_navigation-0.0.0-py3.10.egg-info' (and everything under it)
+[0.350s] Copying ../../build/autoro_navigation/autoro_navigation.egg-info to /home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages/autoro_navigation-0.0.0-py3.10.egg-info
+[0.350s] running install_scripts
+[0.359s] Installing navigator script to /home/mshen/ros2_ws/install/autoro_navigation/lib/autoro_navigation
+[0.359s] writing list of installed files to '/home/mshen/ros2_ws/build/autoro_navigation/install.log'
+[0.372s] Invoked command in '/home/mshen/ros2_ws/src/autoro_navigation' returned '0': PYTHONPATH=/home/mshen/ros2_ws/build/autoro_navigation/prefix_override:/home/mshen/ros2_ws/install/autoro_navigation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/autoro_navigation build --build-base /home/mshen/ros2_ws/build/autoro_navigation/build install --record /home/mshen/ros2_ws/build/autoro_navigation/install.log --single-version-externally-managed

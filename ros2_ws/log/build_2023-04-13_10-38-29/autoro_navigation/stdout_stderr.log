@@ -1,0 +1,9 @@
+running egg_info
+creating ../../build/autoro_navigation/autoro_navigator.egg-info
+writing ../../build/autoro_navigation/autoro_navigator.egg-info/PKG-INFO
+writing dependency_links to ../../build/autoro_navigation/autoro_navigator.egg-info/dependency_links.txt
+writing entry points to ../../build/autoro_navigation/autoro_navigator.egg-info/entry_points.txt
+writing requirements to ../../build/autoro_navigation/autoro_navigator.egg-info/requires.txt
+writing top-level names to ../../build/autoro_navigation/autoro_navigator.egg-info/top_level.txt
+writing manifest file '../../build/autoro_navigation/autoro_navigator.egg-info/SOURCES.txt'
+error: package directory 'autoro_navigator' does not exist
