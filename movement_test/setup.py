@@ -20,6 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'constant_move = movement_test.constant_move:main',
+            'joy_movement = movement_test.joy_movement:main'
         ],
     },
 )
