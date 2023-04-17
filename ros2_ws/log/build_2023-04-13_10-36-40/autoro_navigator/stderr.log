@@ -1,7 +1,0 @@
-/usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
-  warnings.warn(
-  File "/home/mshen/ros2_ws/install/autoro_navigator/lib/python3.10/site-packages/autoro_navigator/navigation_node.py", line 15
-    'costmap'
-    ^^^^^^^^^^^^^^^^^^^^^
-SyntaxError: invalid syntax. Perhaps you forgot a comma?
-
