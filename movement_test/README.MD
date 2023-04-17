@@ -23,8 +23,8 @@ If you want to run the bot using your keyboard: `sudo apt install ros-galactic-t
 - then run `ros2 run teleop-twist-keyboard teleop-twist-keyboard`
 
 ## Package name 
-Movement test
-- i.e.. `ros2 [run/launch] movement_test {node/launch file}`
+movement_test
+- i.e. `ros2 [run/launch] movement_test {node/launch file}`
 
 ## Node Names
 Constant movement: `constant_move`
