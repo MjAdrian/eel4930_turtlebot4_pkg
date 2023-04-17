@@ -17,6 +17,7 @@ Package to test movement methods, such as constant linear and angular speed, joy
 
 ## dependancies:
 OpenCV: `sudo apt install python3-opencv ros-galactic-cv-bridge` 
+
 Joy Node: `sudo apt install ros-galactic-joy` 
 
 If you want to run the bot using your keyboard: `sudo apt install ros-galactic-teleop-twist-keyboard`
@@ -28,5 +29,7 @@ movement_test
 
 ## Node Names
 Constant movement: `constant_move` 
+
 Joy movement: `joy_movement` 
+
 Camera Distance: TBA
