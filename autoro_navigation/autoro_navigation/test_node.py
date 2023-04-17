@@ -10,6 +10,14 @@ import tf_transformations
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
+from bresenham import bresenham
+
+# Support class, put somewhere else probably
+class CameraPose():
+    def __init__(self):
+        self.x_ = 0
+        self.y_ = 0
+        self.theta_ = 0
 
 class TestNode(Node):
     def __init__(self):
@@ -26,6 +34,7 @@ class TestNode(Node):
         self.height_ = 0                # Height of maps
         self.occupied_threshold_ = 0.97 # A cell is occupied if cost >= occupied_threshold
         self.coverage_threshold_ = 0.95 # Amount of the map the waypoint generator should attempt to cover
+        self.camera_fov_ = 170          # Camera field of view in degrees
 
         self.search_waypoints = []      # List of waypoints robot needs to traverse to see all points on map
 
@@ -85,13 +94,66 @@ class TestNode(Node):
         unseen_map[mask] = 0
         unseen_map[~mask] = 100
 
+        ##### Test pose proposition #####
+        initial_camera_pose = CameraPose()
+        initial_camera_pose.x_ = 50
+        initial_camera_pose.y_ = 50
+        initial_camera_pose.theta_ = 0
+
+        visible_points = self.get_visible_points(unseen_map, initial_camera_pose, 90)
+
+        for point in visible_points:
+            unseen_map[point[1], point[0]] = 50
+
+        ##### End test pose proposition #####
+
         self.visualize_map(unseen_map)
 
         ###### TODO #####
-
-        # Randomly propose waypoints within unseen_map
+        # Randomly propose waypoints within binary_costmap_, can optimize number of points
         # Choose waypoints that can see the most unseen points
         # Recluster unseen points, repeat process on all clusters until coverage is acceptable
+
+    def get_visible_points(self, unseen_map, camera_pose: CameraPose, fov):
+        ###### TODO #####
+        # Iterate through angles in FOV
+        # Project rays from camera (Bresenham's?) and add points along that line to visibility list
+
+        visible_points = []
+
+        camera_x = camera_pose.x_
+        camera_y = camera_pose.y_
+        theta_ccw = camera_pose.theta_ - (fov/2)
+        theta_cw = camera_pose.theta_ + (fov/2)
+        
+        # Longest possible projected ray is along diagonal of map
+        ray_length = np.sqrt(self.width_**2 + self.height_**2)
+
+        # Iterate through angles in FOV in half degree increments
+        # 0 degrees around Z is facing east
+        for theta in np.linspace(theta_ccw, theta_cw, fov*2):
+            ray_endpoint_x = (int)(np.cos(np.radians(theta)) * ray_length) + camera_x
+            ray_endpoint_y = (int)(np.sin(np.radians(theta)) * ray_length) + camera_y
+
+            ray = list(bresenham(camera_x, camera_y, ray_endpoint_x, ray_endpoint_y))
+
+            # Iterate through each point in ray until obstacle is encountered
+            n = 0
+            n_ray_x, n_ray_y = ray[n]
+
+            # Iterate through points on ray until running into an obstacle
+            while (self.map_[n_ray_y, n_ray_x] == 0) \
+                    and n_ray_y < self.height_ and n_ray_y >= 0 \
+                    and n_ray_x < self.width_ and n_ray_x >= 0:
+                # If point in not already considered visible, add it to the visible list
+                if ~(ray[n] in visible_points):         
+                    visible_points.append(ray[n])
+                n = n+1
+                n_ray_x, n_ray_y = ray[n]
+
+        return visible_points
+
+        
 
     def generate_clusters(self, map):
         # Create Numpty array containing coordinates of '0' cells
@@ -137,6 +199,8 @@ class TestNode(Node):
         # Wait for Nav2
         self.nav_.waitUntilNav2Active()
 
+
+
 def main(args=None):
     rclpy.init(args=args)
     node = TestNode()
@@ -144,6 +208,9 @@ def main(args=None):
     node.set_initial_pose()
     node.update_maps()
     node.generate_waypoints()
+
+
+
     #node.visualize_map(node.map_)
     #node.visualize_map(node.occupancy_grid_)
 
