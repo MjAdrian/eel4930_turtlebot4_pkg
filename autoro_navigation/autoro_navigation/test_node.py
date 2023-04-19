@@ -26,9 +26,9 @@ class TestNode(Node):
         self.nav_ = BasicNavigator()
 
         # All maps are stored as a 2D Numpy array
-        self.map_ = None                # Laser scan map only, no inflation
-        self.costmap_ = None            # Nav2 costmap with occupation probability
-        self.binary_costmap_ = None     # Binary costmap with inflation
+        self.map_ = None                # Laser scan map only, no inflation, is_obstacle ? 100 : 0
+        self.costmap_ = None            # Nav2 costmap with occupation probability 0-255
+        self.binary_costmap_ = None     # Binary costmap with inflation (inflated_cell_value = 255)
 
         self.width_ = 0                 # Width of maps
         self.height_ = 0                # Height of maps
@@ -48,6 +48,8 @@ class TestNode(Node):
         while not self.get_costmap_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().warn('Service "/global_costmap/get_costmap" not available, waiting...')
 
+
+    # Updates self.map_, self.costmap_, self.binary_costmap_
     def update_maps(self):
         # Call the "/map_server/map" service to get the current costmap
         request = GetMap.Request()
@@ -81,11 +83,14 @@ class TestNode(Node):
 
         self.get_logger().info('All maps updated!')
 
+
+    # TODO: Generate waypoints for search path based on maps
     def generate_waypoints(self):
         # '0' for unseen cell (all empty cells right now), '100' for cells with obstacle
         unseen_map = np.copy(self.map_)
 
         # First clustering, keep the cluster that represents the interior (search) space
+        # Cell value in cluster map corresponds to cluster label (0 to n_clusters-1, -1 if not in cluster)
         labels, n_clusters, cluster_map = self.generate_clusters(unseen_map)
 
         # Update unseen_map to only include cluster '1' (this is assumed to be the search space
@@ -94,30 +99,46 @@ class TestNode(Node):
         unseen_map[mask] = 0
         unseen_map[~mask] = 100
 
-        ##### Test pose proposition #####
+        ##### Test pose #####
+        # Sets two initial camera poses and visualizes the coverage area on map
+
+        self.visualize_map(self.costmap_)
+        self.visualize_map(self.binary_costmap_)
+        self.visualize_map(cluster_map)
+        self.visualize_map(unseen_map)
+
         initial_camera_pose = CameraPose()
         initial_camera_pose.x_ = 50
         initial_camera_pose.y_ = 50
         initial_camera_pose.theta_ = 0
 
-        visible_points = self.get_visible_points(unseen_map, initial_camera_pose, 90)
+        second_camera_pose = CameraPose()
+        second_camera_pose.x_ = 75
+        second_camera_pose.y_ = 80
+        second_camera_pose.theta_ = 270
+        
 
+        visible_points = self.get_unique_visible_points(unseen_map, initial_camera_pose, 90)
         for point in visible_points:
-            unseen_map[point[1], point[0]] = 50
+            unseen_map[point[1], point[0]] = 20
 
-        ##### End test pose proposition #####
+        visible_points = self.get_unique_visible_points(unseen_map, second_camera_pose, 90)
+        for point in visible_points:
+            unseen_map[point[1], point[0]] = 40
 
         self.visualize_map(unseen_map)
+
+        ##### End test pose #####
 
         ###### TODO #####
         # Randomly propose waypoints within binary_costmap_, can optimize number of points
         # Choose waypoints that can see the most unseen points
         # Recluster unseen points, repeat process on all clusters until coverage is acceptable
+        # Path plan through proposed waypoints
 
-    def get_visible_points(self, unseen_map, camera_pose: CameraPose, fov):
-        ###### TODO #####
-        # Iterate through angles in FOV
-        # Project rays from camera (Bresenham's?) and add points along that line to visibility list
+
+    # Returns a list of uniquely visible points from provided camera pose and currently visible points
+    def get_unique_visible_points(self, unseen_map, camera_pose: CameraPose, fov):
 
         visible_points = []
 
@@ -142,19 +163,22 @@ class TestNode(Node):
             n_ray_x, n_ray_y = ray[n]
 
             # Iterate through points on ray until running into an obstacle
-            while (self.map_[n_ray_y, n_ray_x] == 0) \
+            while self.map_[n_ray_y, n_ray_x] == 0 \
                     and n_ray_y < self.height_ and n_ray_y >= 0 \
                     and n_ray_x < self.width_ and n_ray_x >= 0:
-                # If point in not already considered visible, add it to the visible list
-                if ~(ray[n] in visible_points):         
+                # If point in not already in local visible_points and is in global unseen map,
+                # add it to the visible list
+                if ~(ray[n] in visible_points) and unseen_map[n_ray_y, n_ray_x] == 0:         
                     visible_points.append(ray[n])
                 n = n+1
                 n_ray_x, n_ray_y = ray[n]
 
         return visible_points
 
-        
 
+    # Segments map into clusters
+    # Search area of interest should be labelled cluster '1', assuming it's bounded by walls on all sides
+    # Should remove "crevices" caused by missing walls from noise in laser scan, tune min_samples for this
     def generate_clusters(self, map):
         # Create Numpty array containing coordinates of '0' cells
         empty_cells = []
@@ -181,6 +205,9 @@ class TestNode(Node):
         img = ax.imshow(map, cmap='coolwarm')
         plt.show()
 
+
+    # Send initial pose to navigation stack
+    # Blocks execution until pose set successfully
     def set_initial_pose(self):
         # Set initial pose
         q_x, q_y, q_z, q_w = tf_transformations.quaternion_from_euler(0.0, 0.0, 0.0)
@@ -208,11 +235,6 @@ def main(args=None):
     node.set_initial_pose()
     node.update_maps()
     node.generate_waypoints()
-
-
-
-    #node.visualize_map(node.map_)
-    #node.visualize_map(node.occupancy_grid_)
 
     rclpy.spin(node)
     node.destroy_node()
