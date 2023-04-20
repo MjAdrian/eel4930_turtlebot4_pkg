@@ -118,11 +118,11 @@ class TestNode(Node):
         second_camera_pose.theta_ = 270
         
 
-        visible_points = self.get_unique_visible_points(unseen_map, initial_camera_pose, 90)
+        visible_points = self.get_unique_visible_points(unseen_map, initial_camera_pose, 150, 70)
         for point in visible_points:
             unseen_map[point[1], point[0]] = 20
 
-        visible_points = self.get_unique_visible_points(unseen_map, second_camera_pose, 90)
+        visible_points = self.get_unique_visible_points(unseen_map, second_camera_pose, 150, 70)
         for point in visible_points:
             unseen_map[point[1], point[0]] = 40
 
@@ -138,9 +138,13 @@ class TestNode(Node):
 
 
     # Returns a list of uniquely visible points from provided camera pose and currently visible points
-    def get_unique_visible_points(self, unseen_map, camera_pose: CameraPose, fov):
+    # Can increase degree_step=1/angular_resolution if there are holes in view cone
+    # TODO: To speed up computation and improve resolution, project ray longer distance 
+    # and stop incrementing ray at camera radius (instead of making ray=camera radius)
+    def get_unique_visible_points(self, unseen_map, camera_pose: CameraPose, fov, radius):
 
         visible_points = []
+        angular_resolution = 2
 
         camera_x = camera_pose.x_
         camera_y = camera_pose.y_
@@ -148,11 +152,13 @@ class TestNode(Node):
         theta_cw = camera_pose.theta_ + (fov/2)
         
         # Longest possible projected ray is along diagonal of map
-        ray_length = np.sqrt(self.width_**2 + self.height_**2)
+        # ray_length = np.sqrt(self.width_**2 + self.height_**2)
+        # Or use provided camera radius
+        ray_length = radius
 
         # Iterate through angles in FOV in half degree increments
         # 0 degrees around Z is facing east
-        for theta in np.linspace(theta_ccw, theta_cw, fov*2):
+        for theta in np.linspace(theta_ccw, theta_cw, fov*angular_resolution):
             ray_endpoint_x = (int)(np.cos(np.radians(theta)) * ray_length) + camera_x
             ray_endpoint_y = (int)(np.sin(np.radians(theta)) * ray_length) + camera_y
 
@@ -165,7 +171,8 @@ class TestNode(Node):
             # Iterate through points on ray until running into an obstacle
             while self.map_[n_ray_y, n_ray_x] == 0 \
                     and n_ray_y < self.height_ and n_ray_y >= 0 \
-                    and n_ray_x < self.width_ and n_ray_x >= 0:
+                    and n_ray_x < self.width_ and n_ray_x >= 0 \
+                    and self.distance(n_ray_x, n_ray_y, camera_x, camera_y) < radius:
                 # If point in not already in local visible_points and is in global unseen map,
                 # add it to the visible list
                 if ~(ray[n] in visible_points) and unseen_map[n_ray_y, n_ray_x] == 0:         
@@ -199,7 +206,12 @@ class TestNode(Node):
             cluster_map[ny, nx] = labels[i]
         print(n_clusters)
         return labels, n_clusters, cluster_map
+    
+    # Computes 2D distance between 2 points
+    def distance(self, x0, y0, x1, y1):
+        return np.sqrt((x1-x0)**2 + (y1-y0)**2)
 
+    # Displays provided map (numpy array) with matplotlib
     def visualize_map(self, map):
         fig, ax = plt.subplots()
         img = ax.imshow(map, cmap='coolwarm')
