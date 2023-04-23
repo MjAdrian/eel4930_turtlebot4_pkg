@@ -1,0 +1,27 @@
+Terminal 1:
+
+1) SSH to bot
+2) type this command: ros2 launch turtlebot4_navigation slam_sync.launch.py
+
+------------------------------------------------------------------------------------
+Terminal 2: 
+
+1) In your pc (not ssh): ros2 launch turtlebot4_viz view_diagnostics.launch.py 
+
+------------------------------------------------------------------------------------
+Terminal 3: 
+
+1) Use whatever controller you use, ex: teleop_twist_keyboard/joy or a custom one
+
+------------------------------------------------------------------------------------
+Terminal 4:
+
+once you are finished mapping
+1) ssh 
+2) enter the following:
+ros2 service call /slam_toolbox/save_map slam_toolbox/srv/SaveMap "name:
+ data: 'YOUR_FILE_NAME'"
+ 
+3) the file will appear in whatever dir you did that command in as the following
+	3.1) YOUR_FILE_NAME.pgm
+	3.2) YOUR_FILE_NAME.yaml
