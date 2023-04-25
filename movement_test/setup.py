@@ -17,8 +17,8 @@ setup(
     zip_safe=True,
     maintainer='adrian',
     maintainer_email='adrian23fernandez@gmail.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='Package that test the Turtlebot 4\'s movement',
+    license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

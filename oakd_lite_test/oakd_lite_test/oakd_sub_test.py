@@ -7,11 +7,16 @@ import cv2
 class OakDLiteSubscriber(Node):
     def __init__(self):
         super().__init__('oakd_lite_subscriber')
+
+        # create subscriber 
         self.subscription = self.create_subscription(
             Image, '/oakd_lite_camera/rgb_image', self.listener_callback, 10)
+        
+        # create bridge
         self.bridge = CvBridge()
 
     def listener_callback(self, msg):
+        # recieve img msg and display it
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         cv2.imshow("OAK-D Lite Stream", frame)
         cv2.waitKey(1)

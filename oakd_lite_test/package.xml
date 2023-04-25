@@ -3,10 +3,10 @@
 <package format="3">
   <name>oakd_lite_test</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Package that test the Turtlebot 4's OAKD Lite Camera</description>
   <maintainer email="adrian23fernandez@gmail.com">adrian</maintainer>
-  <license>TODO: License declaration</license>
-
+  <license>Apache-2.0</license>
+  
   <exec_depend>rclpy</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>

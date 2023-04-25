@@ -8,28 +8,35 @@ import depthai as dai
 class OakDLitePublisher(Node):
     def __init__(self):
         super().__init__('oakd_lite_publisher')
+
+        # create publisher
         self.publisher_ = self.create_publisher(Image, '/oakd_lite_camera/rgb_image', 10)
+        
+        # set up CV Bridge
         self.bridge = CvBridge()
 
-        self.init_camera()
-
-    def init_camera(self):
+        # Make object
         self.pipeline = dai.Pipeline()
 
+        # Set up colored images
         cam_rgb = self.pipeline.create(dai.node.ColorCamera)
         xout_rgb = self.pipeline.create(dai.node.XLinkOut)
         xout_rgb.setStreamName("rgb")
 
+        # image properties
         cam_rgb.setPreviewSize(300, 300)
         cam_rgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
         cam_rgb.setInterleaved(False)
 
+        # set up output link
         cam_rgb.preview.link(xout_rgb.input)
 
+        # set up device instance
         self.device = dai.Device(self.pipeline)
         self.q_rgb = self.device.getOutputQueue("rgb", 4, blocking=False)
 
     def publish_camera_data(self):
+        # get msg, convert to CV img msg then publish
         frame_rgb = self.q_rgb.get().getCvFrame()
         image_message = self.bridge.cv2_to_imgmsg(frame_rgb, encoding="bgr8")
         self.publisher_.publish(image_message)
