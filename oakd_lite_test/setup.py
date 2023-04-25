@@ -1,7 +1,7 @@
 from setuptools import setup
 import glob
 
-package_name = 'movement_test'
+package_name = 'oakd_lite_test'
 
 setup(
     name=package_name,
@@ -22,9 +22,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'constant_move = movement_test.constant_move:main',
-            'joy_movement = movement_test.joy_movement:main',
-            'camera_depth = movement_test.camera_depth:main',
+            'oakd_pub_test = oakd_lite_test.oakd_pub_test:main',
+            'oakd_sub_test = oakd_lite_test.oakd_sub_test:main',
         ],
     },
 )
