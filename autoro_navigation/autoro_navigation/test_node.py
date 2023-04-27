@@ -151,10 +151,8 @@ class MovementNode(Node):
         theta_ccw = camera_pose.theta_ - (fov/2)
         theta_cw = camera_pose.theta_ + (fov/2)
 
-        # Longest possible projected ray is along diagonal of map
-        # ray_length = np.sqrt(self.width_**2 + self.height_**2)
-        # Or use provided camera radius
-        ray_length = radius
+        # Make ray_length double the longest line that would be present on the map
+        ray_length = 2*np.sqrt(self.width_**2 + self.height_**2)
 
         # Iterate through angles in FOV in half degree increments
         # 0 degrees around Z is facing east
