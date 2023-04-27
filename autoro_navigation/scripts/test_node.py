@@ -10,6 +10,7 @@ import tf_transformations
 
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 from sklearn.cluster import DBSCAN
 from bresenham import bresenham
 
@@ -36,6 +37,7 @@ class TestNode(Node):
         self.occupied_threshold_ = 0.97 # A cell is occupied if cost >= occupied_threshold
         self.coverage_threshold_ = 0.95 # Amount of the map the waypoint generator should attempt to cover
         self.camera_fov_ = 170          # Camera field of view in degrees
+        self.camera_radius_ = 80        # Max camera visible distance in cells
 
         self.search_waypoints = []      # List of waypoints robot needs to traverse to see all points on map
 
@@ -102,7 +104,7 @@ class TestNode(Node):
 
         ##### Test pose #####
         # Sets two initial camera poses and visualizes the coverage area on map
-
+        '''
         self.visualize_map(self.costmap_)
         self.visualize_map(self.binary_costmap_)
         self.visualize_map(cluster_map)
@@ -127,7 +129,7 @@ class TestNode(Node):
         for point in visible_points:
             unseen_map[point[1], point[0]] = 40
 
-        self.visualize_map(unseen_map)
+        self.visualize_map(unseen_map)'''
 
         ##### End test pose #####
 
@@ -137,6 +139,52 @@ class TestNode(Node):
         # Recluster unseen points, repeat process on all clusters until coverage is acceptable
         # Path plan through proposed waypoints
 
+        camera_coverage = 0.0
+        theta_list = [0, 45, 90, 135, 180, 225, 270, 315]
+        shade = 10          # Color to make new coverage area on unseen map
+        while camera_coverage < self.coverage_threshold_:
+            # Generate list of 10 random map indexes (between 0 and width*height)
+            # Make sure indexes are within traversable area and sufficiently far from each other
+            random_list = []
+            pose_list = []
+            for point_idx in range(0,10):
+                
+                ### TODO: Distance check ###
+                rand = random.randint(0, self.width_*self.height_-1)
+                randw = rand % self.width_
+                randh = (int)(rand / self.width_)
+                print("x, y",randw, randh)
+                while self.binary_costmap_[randh, randw] != 0:
+                    random_list.append((randw, randh))
+                    rand = random.randint(0, self.width_*self.height_-1)
+                    randw = rand % self.width_
+                    randh = (int)(rand / self.width_)
+
+                # Add 8 poses (8 angles) for each point
+                for theta_idx in range(0,7):
+                    camera_pose = CameraPose()
+                    camera_pose.x_ = randw
+                    camera_pose.y_ = randh
+                    camera_pose.theta_ = theta_list[theta_idx]
+                    pose_list.append(camera_pose)
+
+            # Iterate through 8 angles for every random point, choose the pose that
+            # results in the greatest camera coverage (10*8) poses test total
+            pose_scores = []    # Keeps track of the number of new visible points from each pose
+            for camera_pose in pose_list:
+                print("Testing pose: (", camera_pose.x_, ",", camera_pose.y_, ",", camera_pose.theta_, ")")
+                new_visible_points = self.get_unique_visible_points(unseen_map, camera_pose, self.camera_fov_, self.camera_radius_)
+                pose_scores.append(len(new_visible_points))
+
+            # Choose the pose that produces the greatest coverage and update unseen_map
+            # Update coverage percentage as well
+            best_pose_idx = pose_scores.index(max(pose_scores))
+            new_visible_points = self.get_unique_visible_points(unseen_map, camera_pose, self.camera_fov_, self.camera_radius_)
+            for point in new_visible_points:
+                unseen_map[point[1], point[0]] = shade
+            shade = shade + 10
+
+            self.visualize_map(unseen_map)
 
     # Returns a list of uniquely visible points from provided camera pose and currently visible points
     # Can increase degree_step=1/angular_resolution if there are holes in view cone
@@ -168,9 +216,9 @@ class TestNode(Node):
             n_ray_x, n_ray_y = ray[n]
 
             # Iterate through points on ray until running into an obstacle
-            while self.map_[n_ray_y, n_ray_x] == 0 \
-                    and n_ray_y < self.height_ and n_ray_y >= 0 \
+            while n_ray_y < self.height_ and n_ray_y >= 0 \
                     and n_ray_x < self.width_ and n_ray_x >= 0 \
+                    and self.map_[n_ray_y, n_ray_x] == 0 \
                     and self.distance(n_ray_x, n_ray_y, camera_x, camera_y) < radius:
                 # If point in not already in local visible_points and is in global unseen map,
                 # add it to the visible list
