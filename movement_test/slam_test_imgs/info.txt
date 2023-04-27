@@ -6,7 +6,7 @@ Terminal 1:
 ------------------------------------------------------------------------------------
 Terminal 2: 
 
-1) In your pc (not ssh): ros2 launch turtlebot4_viz view_diagnostics.launch.py 
+1) In your pc (not ssh): ros2 launch turtlebot4_viz view_robot.launch.py
 
 ------------------------------------------------------------------------------------
 Terminal 3: 

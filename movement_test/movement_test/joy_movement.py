@@ -16,7 +16,7 @@ class TurtleBot4Controller(Node):
         # create message and add values
         twist_msg = Twist()
         linear_speed = joy_msg.axes[1] * 0.5  # Left stick Y-axis for linear speed
-        angular_speed = joy_msg.axes[0] * 0.5  # Left stick X-axis for angular speed
+        angular_speed = joy_msg.axes[0] * 1  # Left stick X-axis for angular speed
 
         # store values into msg
         twist_msg.linear.x = linear_speed
