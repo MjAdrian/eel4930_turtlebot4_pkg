@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import rclpy
 from rclpy.node import Node
 
@@ -19,9 +20,9 @@ class CameraPose():
         self.y_ = 0
         self.theta_ = 0
 
-class MovementNode(Node):
+class TestNode(Node):
     def __init__(self):
-        super().__init__('movement_node')
+        super().__init__('test_node')
 
         self.nav_ = BasicNavigator()
 

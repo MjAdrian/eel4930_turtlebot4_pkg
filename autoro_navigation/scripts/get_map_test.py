@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import rclpy
 from rclpy.node import Node
 
@@ -34,13 +35,13 @@ class GetMapNode(Node):
         else:
             self.get_logger().error('Failed to get map: %r' % future.exception())
             return
-        
+
         self.map_ = np.array(map.data).reshape((map.info.height, map.info.width))
 
 
         self.visualize_map()
 
-        
+
     def visualize_map(self):
         fig, ax = plt.subplots()
         img = ax.imshow(self.map_, cmap='coolwarm')
