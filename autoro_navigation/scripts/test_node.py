@@ -31,6 +31,8 @@ class TestNode(Node):
         self.map_ = None                # Laser scan map only, no inflation, is_obstacle ? 100 : 0
         self.costmap_ = None            # Nav2 costmap with occupation probability 0-255
         self.binary_costmap_ = None     # Binary costmap with inflation (inflated_cell_value = 255)
+        self.search_map_ = None         # Search area = map_ - (outside area + inside obstacles)
+        self.traversable_map_ = None    # traversable_map_ = search_map_ - binary_costmap_
 
         self.width_ = 0                 # Width of maps
         self.height_ = 0                # Height of maps
@@ -52,7 +54,7 @@ class TestNode(Node):
             self.get_logger().warn('Service "/global_costmap/get_costmap" not available, waiting...')
 
 
-    # Updates self.map_, self.costmap_, self.binary_costmap_
+    # Updates self.map_, self.costmap_, self.binary_costmap_, self.search_map_, self.traversable_map_
     def update_maps(self):
         # Call the "/map_server/map" service to get the current costmap
         request = GetMap.Request()
@@ -84,54 +86,53 @@ class TestNode(Node):
         self.binary_costmap_[occupied_mask] = 1
         self.binary_costmap_[~occupied_mask] = 0
 
+        # '0' for unoccupied cell, '100' for cells with obstacle
+        self.search_map_ = np.copy(self.map_)
+
+        # First clustering, keep the cluster that represents the interior (search) space
+        # Cell value in cluster map corresponds to cluster label (0 to n_clusters-1, -1 if not in cluster)
+        labels, n_clusters, cluster_map = self.generate_clusters(self.search_map_)
+
+        # Update search_map_ to only include cluster '1' (this is assumed to be the search space
+        # if there is an unvisited border around the edge of the map)
+        cluster_mask = cluster_map == 1.0
+        self.search_map_[cluster_mask] = 0
+        self.search_map_[~cluster_mask] = 100
+
+        self.traversable_map_ = np.copy(self.search_map_)
+        self.traversable_map_[occupied_mask] = 100
+
+        self.visualize_map(self.map_)
+        self.visualize_map(self.costmap_)
+        self.visualize_map(self.binary_costmap_)
+        self.visualize_map(self.search_map_)
+        self.visualize_map(self.traversable_map_)
+
         self.get_logger().info('All maps updated!')
 
 
     # TODO: Generate waypoints for search path based on maps
     def generate_waypoints(self):
+        # Local map to keep track of not yet visible cells
         # '0' for unseen cell (all empty cells right now), '100' for cells with obstacle
-        unseen_map = np.copy(self.map_)
+        unseen_map = np.copy(self.search_map_)
 
-        # First clustering, keep the cluster that represents the interior (search) space
-        # Cell value in cluster map corresponds to cluster label (0 to n_clusters-1, -1 if not in cluster)
-        labels, n_clusters, cluster_map = self.generate_clusters(unseen_map)
+        # Extract traversable points from traversable map
+        traversable_points = []
+        for y in range(len(self.traversable_map_)):
+            for x in range(len(self.traversable_map_[0])):
+                if self.traversable_map_[y, x] == 0:
+                    traversable_points.append((x, y))
 
-        # Update unseen_map to only include cluster '1' (this is assumed to be the search space
-        # if there is an unvisited border around the edge of the map)
-        mask = cluster_map == 1.0
-        unseen_map[mask] = 0
-        unseen_map[~mask] = 100
-
-        ##### Test pose #####
-        # Sets two initial camera poses and visualizes the coverage area on map
-        '''
-        self.visualize_map(self.costmap_)
-        self.visualize_map(self.binary_costmap_)
-        self.visualize_map(cluster_map)
-        self.visualize_map(unseen_map)
-
-        initial_camera_pose = CameraPose()
-        initial_camera_pose.x_ = 50
-        initial_camera_pose.y_ = 50
-        initial_camera_pose.theta_ = 0
-
-        second_camera_pose = CameraPose()
-        second_camera_pose.x_ = 75
-        second_camera_pose.y_ = 80
-        second_camera_pose.theta_ = 270
-
-
-        visible_points = self.get_unique_visible_points(unseen_map, initial_camera_pose, 150, 70)
-        for point in visible_points:
-            unseen_map[point[1], point[0]] = 20
-
-        visible_points = self.get_unique_visible_points(unseen_map, second_camera_pose, 150, 70)
-        for point in visible_points:
-            unseen_map[point[1], point[0]] = 40
-
-        self.visualize_map(unseen_map)'''
-
-        ##### End test pose #####
+        # Define starting waypoint (not in waypoint list, but used to compute initial unseen_map)
+        initial_pose = CameraPose()
+        initial_pose.x_ = 0
+        initial_pose.y_ = 0
+        initial_pose.theta_ = 0
+        new_visible_points = self.get_unique_visible_points(unseen_map, camera_pose, self.camera_fov_, self.camera_radius_)
+        for point in new_visible_points:
+            unseen_map[point[1], point[0]] = shade
+        shade = shade + 10
 
         ###### TODO #####
         # Randomly propose waypoints within binary_costmap_, can optimize number of points
@@ -143,22 +144,20 @@ class TestNode(Node):
         theta_list = [0, 45, 90, 135, 180, 225, 270, 315]
         shade = 10          # Color to make new coverage area on unseen map
         while camera_coverage < self.coverage_threshold_:
-            # Generate list of 10 random map indexes (between 0 and width*height)
-            # Make sure indexes are within traversable area and sufficiently far from each other
+            # Generate list of 10 random map points within traversable area and sufficiently far from each other
             random_list = []
             pose_list = []
             for point_idx in range(0,10):
                 
                 ### TODO: Distance check ###
-                rand = random.randint(0, self.width_*self.height_-1)
-                randw = rand % self.width_
-                randh = (int)(rand / self.width_)
-                print("x, y",randw, randh)
-                while self.binary_costmap_[randh, randw] != 0:
-                    random_list.append((randw, randh))
+                randw = 0
+                randh = 0
+                while traversable_map[randh, randw] != 0:
                     rand = random.randint(0, self.width_*self.height_-1)
                     randw = rand % self.width_
                     randh = (int)(rand / self.width_)
+
+                random_list.append((randw, randh))
 
                 # Add 8 poses (8 angles) for each point
                 for theta_idx in range(0,7):
@@ -261,7 +260,7 @@ class TestNode(Node):
     # Displays provided map (numpy array) with matplotlib
     def visualize_map(self, map):
         fig, ax = plt.subplots()
-        img = ax.imshow(map, cmap='coolwarm')
+        img = ax.imshow(map, cmap='rainbow')
         plt.show()
 
 
