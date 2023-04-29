@@ -14,12 +14,14 @@ import random
 from sklearn.cluster import DBSCAN
 from bresenham import bresenham
 
+from libs_autoro_navigation.camera_pose import CameraPose
+
 # Support class, put somewhere else probably
-class CameraPose():
-    def __init__(self):
-        self.x_ = 0
-        self.y_ = 0
-        self.theta_ = 0
+# class CameraPose():
+#     def __init__(self):
+#         self.x_ = 0
+#         self.y_ = 0
+#         self.theta_ = 0
 
 class TestNode(Node):
     def __init__(self):
@@ -38,7 +40,7 @@ class TestNode(Node):
         self.height_ = 0                # Height of maps
         self.occupied_threshold_ = 0.97 # A cell is occupied if cost >= occupied_threshold
         self.coverage_threshold_ = 0.95 # Amount of the map the waypoint generator should attempt to cover
-        self.camera_fov_ = 170          # Camera field of view in degrees
+        self.camera_fov_ = 130          # Camera field of view in degrees
         self.camera_radius_ = 80        # Max camera visible distance in cells
 
         self.search_waypoints = []      # List of waypoints robot needs to traverse to see all points on map
@@ -102,11 +104,12 @@ class TestNode(Node):
         self.traversable_map_ = np.copy(self.search_map_)
         self.traversable_map_[occupied_mask] = 100
 
+        '''
         self.visualize_map(self.map_)
         self.visualize_map(self.costmap_)
         self.visualize_map(self.binary_costmap_)
         self.visualize_map(self.search_map_)
-        self.visualize_map(self.traversable_map_)
+        self.visualize_map(self.traversable_map_)'''
 
         self.get_logger().info('All maps updated!')
 
@@ -124,25 +127,34 @@ class TestNode(Node):
                 if self.traversable_map_[y, x] == 0:
                     traversable_points.append((x, y))
 
+        # Get initial number of unseen points
+        num_unseen_points = 0
+        for row in unseen_map:
+            for point in row:
+                if point == 0:
+                    num_unseen_points = num_unseen_points + 1
+        initial_num_unseen_points = num_unseen_points
+
         # Define starting waypoint (not in waypoint list, but used to compute initial unseen_map)
+        # Record points viewed from starting waypoint and update camera coverage
         initial_pose = CameraPose()
-        initial_pose.x_ = 0
-        initial_pose.y_ = 0
+        initial_pose.x_ = 28
+        initial_pose.y_ = 67
         initial_pose.theta_ = 0
-        new_visible_points = self.get_unique_visible_points(unseen_map, camera_pose, self.camera_fov_, self.camera_radius_)
-        for point in new_visible_points:
-            unseen_map[point[1], point[0]] = shade
-        shade = shade + 10
+        new_visible_points = self.get_unique_visible_points(unseen_map, initial_pose, self.camera_fov_, self.camera_radius_, 1)
+        num_unseen_points = num_unseen_points - len(new_visible_points)
+        camera_coverage = (initial_num_unseen_points - num_unseen_points) / initial_num_unseen_points
+        self.shade_points(unseen_map, new_visible_points, 10)
+
+        self.visualize_map(unseen_map)
 
         ###### TODO #####
         # Randomly propose waypoints within binary_costmap_, can optimize number of points
         # Choose waypoints that can see the most unseen points
         # Recluster unseen points, repeat process on all clusters until coverage is acceptable
         # Path plan through proposed waypoints
-
-        camera_coverage = 0.0
         theta_list = [0, 45, 90, 135, 180, 225, 270, 315]
-        shade = 10          # Color to make new coverage area on unseen map
+        shade = 20
         while camera_coverage < self.coverage_threshold_:
             # Generate list of 10 random map points within traversable area and sufficiently far from each other
             random_list = []
@@ -185,26 +197,29 @@ class TestNode(Node):
 
             self.visualize_map(unseen_map)
 
+    # Colors map based on list of coordinate points (x,y) provided
+    def shade_points(self, map, points, shade):
+        for point in points:
+            map[point[1], point[0]] = shade
+
     # Returns a list of uniquely visible points from provided camera pose and currently visible points
     # Can increase degree_step=1/angular_resolution if there are holes in view cone
     # TODO: To speed up computation and improve resolution, project ray longer distance
     # and stop incrementing ray at camera radius (instead of making ray=camera radius)
-    def get_unique_visible_points(self, unseen_map, camera_pose: CameraPose, fov, radius):
+    def get_unique_visible_points(self, unseen_map, camera_pose: CameraPose, fov, radius, resolution):
 
-        visible_points = []
-        angular_resolution = 2
+        visible_points = set()
 
         camera_x = camera_pose.x_
         camera_y = camera_pose.y_
-        theta_ccw = camera_pose.theta_ - (fov/2)
-        theta_cw = camera_pose.theta_ + (fov/2)
+        theta_ccw = camera_pose.theta_ - (fov/2)        # Counterclockwise FOV limit
+        theta_cw = camera_pose.theta_ + (fov/2)         # Clockwise FOV limit
 
         # Make ray_length double the longest line that would be present on the map
         ray_length = 2*np.sqrt(self.width_**2 + self.height_**2)
 
-        # Iterate through angles in FOV in half degree increments
-        # 0 degrees around Z is facing east
-        for theta in np.linspace(theta_ccw, theta_cw, fov*angular_resolution):
+        # Iterate through angles in FOV in resolution*degree increments
+        for theta in np.linspace(theta_ccw, theta_cw, fov*resolution):
             ray_endpoint_x = (int)(np.cos(np.radians(theta)) * ray_length) + camera_x
             ray_endpoint_y = (int)(np.sin(np.radians(theta)) * ray_length) + camera_y
 
@@ -220,9 +235,9 @@ class TestNode(Node):
                     and self.map_[n_ray_y, n_ray_x] == 0 \
                     and self.distance(n_ray_x, n_ray_y, camera_x, camera_y) < radius:
                 # If point in not already in local visible_points and is in global unseen map,
-                # add it to the visible list
-                if ~(ray[n] in visible_points) and unseen_map[n_ray_y, n_ray_x] == 0:
-                    visible_points.append(ray[n])
+                # add it to the visible set
+                if unseen_map[n_ray_y, n_ray_x] == 0:
+                    visible_points.add(ray[n])
                 n = n+1
                 n_ray_x, n_ray_y = ray[n]
 
@@ -250,7 +265,6 @@ class TestNode(Node):
         for i in range(len(empty_cells)):
             nx, ny = empty_cells[i]
             cluster_map[ny, nx] = labels[i]
-        print(n_clusters)
         return labels, n_clusters, cluster_map
 
     # Computes 2D distance between 2 points
@@ -273,7 +287,7 @@ class TestNode(Node):
         initial_pose.header.frame_id = 'map'
         initial_pose.header.stamp = self.nav_.get_clock().now().to_msg()
         initial_pose.pose.position.x = 0.0
-        initial_pose.pose.position.y = -0.0
+        initial_pose.pose.position.y = 0.0
         initial_pose.pose.position.z = 0.0
         initial_pose.pose.orientation.x = q_x
         initial_pose.pose.orientation.y = q_y
