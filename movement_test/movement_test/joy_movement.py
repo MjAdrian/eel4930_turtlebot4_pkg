@@ -15,7 +15,7 @@ class TurtleBot4Controller(Node):
     def joy_callback(self, joy_msg):
         # create message and add values
         twist_msg = Twist()
-        linear_speed = joy_msg.axes[1] * 0.5  # Left stick Y-axis for linear speed
+        linear_speed = joy_msg.axes[1] * 1  # Left stick Y-axis for linear speed
         angular_speed = joy_msg.axes[0] * 1  # Left stick X-axis for angular speed
 
         # store values into msg
@@ -24,7 +24,7 @@ class TurtleBot4Controller(Node):
 
         # publish and log msg
         self.publisher.publish(twist_msg)
-        self.get_logger().info('Publishing cmd_vel: linear=%f, angular=%f' % (linear_speed, angular_speed))
+        # self.get_logger().info('Publishing cmd_vel: linear=%f, angular=%f' % (linear_speed, angular_speed))
 
 def main(args=None):
     # Run node
