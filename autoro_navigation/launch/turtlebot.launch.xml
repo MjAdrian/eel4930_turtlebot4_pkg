@@ -1,0 +1,11 @@
+<launch>
+    <!-- Turtlebot3 simulation -->
+    <include file="$(find-pkg-share turtlebot3_gazebo)/launch/turtlebot3_world.launch.py">
+    </include>
+
+    <!-- Navigation2 -->
+    <include file="$(find-pkg-share turtlebot3_navigation2)/launch/navigation2.launch.py">
+        <arg name="use_sim_time" value="True" />
+        <arg name="map" value="maps/world_map.yaml"/>
+    </include>
+</launch>
