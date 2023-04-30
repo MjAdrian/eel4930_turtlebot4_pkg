@@ -11,6 +11,14 @@ ament_python_install_package(${PROJECT_NAME})
 install(DIRECTORY launch
     DESTINATION share/${PROJECT_NAME})
 
+# Put maps into share
+install(DIRECTORY maps
+    DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY models
+    DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY worlds
+    DESTINATION share/${PROJECT_NAME})
+
 # Python scripts
 install(PROGRAMS
     scripts/test_node.py

@@ -14,7 +14,7 @@ import random
 from sklearn.cluster import DBSCAN
 from bresenham import bresenham
 
-from libs_autoro_navigation.camera_pose import CameraPose
+from autoro_navigation.camera_pose import CameraPose
 
 # Support class, put somewhere else probably
 # class CameraPose():
@@ -160,7 +160,7 @@ class TestNode(Node):
             random_list = []
             pose_list = []
             for point_idx in range(0,10):
-                
+
                 ### TODO: Distance check ###
                 randw = 0
                 randh = 0
