@@ -24,6 +24,7 @@ install(PROGRAMS
     scripts/test_node.py
     scripts/get_map_test.py
     scripts/occupancy_grid_test.py
+    nodes/marker_server.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
