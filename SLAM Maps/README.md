@@ -36,3 +36,9 @@ Note: There must be a new line, `\`, between `name:` and `data:` or it won't wor
 Once saved, the map files will be saved in the current directory with the following names:	
    1. YOUR_FILE_NAME.pgm
    2. YOUR_FILE_NAME.yaml
+
+This will save your file on the Raspberry Pi 4, to move it to your computer, do the following:
+    - `scp username@remote_host:file/path/file.type local_directory_path`
+    - If you have the Turtlebot saved as a hostname in `~/.ssh/config`
+      - `scp myhostname:remote_file_path local_file_path`
+        - e.g., `scp turltebot4:~/map.pgm .` will take the file `map.pgm` from the Turtlebot's home directory and move it to the current directory that your terminal is in
