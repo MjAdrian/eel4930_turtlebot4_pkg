@@ -12,4 +12,9 @@ sudo apt-get install -y \
     ros-galactic-nav2-simple-commander \
     ros-galactic-tf-transformations \
     "ros-galactic-turtlebot3*" \
-    "ros-galactic-gazebo*"
+    "ros-galactic-gazebo*" \
+    ros-galactic-joy \
+    python3-opencv \
+    ros-galactic-cv-bridge \
+    ros-galactic-teleop-twist-keyboard 
+sudo pip3 install -r requirements.txt
