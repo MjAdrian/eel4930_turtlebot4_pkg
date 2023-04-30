@@ -26,7 +26,7 @@ class TurtleBot4Controller(Node):
 
         # publish and log msg
         self.publisher.publish(twist_msg)
-        self.get_logger().info('Publishing cmd_vel: linear=%f, angular=%f' % (linear_speed, angular_speed))
+        # self.get_logger().info('Publishing cmd_vel: linear=%f, angular=%f' % (linear_speed, angular_speed))
 
 def main(args=None):
     # Run node
