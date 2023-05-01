@@ -220,5 +220,5 @@ def plot_circle_norm_3d(circle_pose, ax):
     ax.quiver(circle_pose[0], circle_pose[1], circle_pose[2], circle_pose[3], circle_pose[4], circle_pose[5], alpha=1, color='b')
     ax.set_xlabel('X'), ax.set_ylabel('Y'), ax.set_zlabel('Z')
     ax.set_xlim(-2.5, 2.5), ax.set_ylim(-2.5, 2.5), ax.set_zlim(-2.5, 2.5)
-    plt.pause(1/60)
+    plt.pause(1/30)
     ax.cla()
