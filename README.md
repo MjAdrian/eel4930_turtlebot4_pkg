@@ -1,10 +1,21 @@
 # eel4930_turtlebot4_pkg
-Repo for EEL4930 Autonomous Robotics Ros 2 Galactic Packages
+Repo for Team 8's EEL4930 Autonomous Robotics Final Project made in Ros 2 Galactic
+
+## About
+Our objective is to use a TurtleBot 4 to make a robot that is able to locate a target in a given map and fire at it using a Nerf Gun. 
+
+Our work has been divided as such:
+- Aditya Ramesh: Target Detection
+- Ethan J. Haengel: Mechanical Design for Nerf Gun Holder & its code
+- Matthew Shen & Cameron Brown: Path Planning & Object Advoidance
+- Adrian Fernandez: TurtleBot 4 Movement & General Debugging/Planning
+
+![Image of the planned architecture](Node%20Draft/Draft_of_Plan.drawio.png)
+Image: Rough draft depicting the communication and integration plan for the project components
 
 ## Useful Turtlebot 4 Docs:
 1. https://turtlebot.github.io/turtlebot4-user-manual/
 	- https://github.com/turtlebot/turtlebot4_desktop
-2. https://github.com/turtlebot/turtlebot4_robot/blob/galactic/turtlebot4_bringup/launch/oakd.launch.py
 
 ### Useful Tooling
 #### RQT
