@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'circle_pose_test = kalman_filter_test.target_filter_test:main'
         ],
     },
 )
