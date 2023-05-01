@@ -11,7 +11,7 @@ import cv2
 
 def filter_by_brightness2(frame):
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    _, threshold = cv2.threshold(gray_frame, 150, 200, cv2.THRESH_BINARY_INV)
+    _, threshold = cv2.threshold(gray_frame, 125, 255, cv2.THRESH_BINARY_INV)
     connectivity = 8
     analysis = cv2.connectedComponentsWithStats(threshold,
                                                 connectivity,

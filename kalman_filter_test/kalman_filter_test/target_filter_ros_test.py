@@ -4,6 +4,8 @@ from sensor_msgs.msg import Image
 import cv2
 import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
+from kalman_filter_test.KF import KF_pose_estimation
+
 
 from kalman_filter_test.target_filter import *
 from kalman_filter_test.target_pose_estimation import *
@@ -32,6 +34,22 @@ class circle_tracker(Node):
         # plot
         self.fig_3d, self.ax_3d = initalize_3d_plot()
 
+        # Initalize Kalman Filter
+        self.kalman_pose = KF_pose_estimation(dt=0.1,
+                                     u_x=1, 
+                                     u_y=1, 
+                                     u_z=1, 
+                                     u_nx=1, 
+                                     u_ny=1, 
+                                     u_nz=1, 
+                                     std_acc=1,
+                                     x_std_meas=1, 
+                                     y_std_meas=1, 
+                                     z_std_meas=1, 
+                                     nx_std_meas=1, 
+                                     ny_std_meas=1, 
+                                     nz_std_meas=1)
+
 
     def sub_callback(self, msg):
         try:
@@ -41,6 +59,40 @@ class circle_tracker(Node):
 
         # TODO: add processing code
                 # Undistort Image using intrinsic parameters
+        # undistorted_frame = cv2.undistort(cv_image, self.K, self.distortion)
+
+        # # Filter image for target
+        # # filtered_frame = filter_by_color(undistorted_frame)
+        # filtered_frame = filter_by_brightness(undistorted_frame) # WIP
+
+        # # Detect contours of target
+        # frame_w_contours, contours, heirarchy = find_contours_connected_regions(filtered_frame)
+        # # canny_edges, contours, heirarchy = find_contours_canny(result)
+        # # _, contours, heirarchy = find_contours_adaptive_threshold(frame, result)
+
+        # # Calculate best fitting ellipse from contours
+        # image_w_ellipse, ellipse_w_max_area, max_area = find_target(cv_image, contours, heirarchy)
+
+        # # If ellipse is found, calculate target pose
+        # if np.all(ellipse_w_max_area != None):
+        #     # kalman_pose.predict()
+        #     observed_target_pose = determine_target_pose(self.K, ellipse_w_max_area)
+        #     print(observed_target_pose)
+        #     # filter_target_pose = kalman_pose.update(observed_target_pose[0].flatten())
+        #     # print(filter_target_pose)
+
+        #     # Plot 2D visualization of ellipse norm (plot resets after 500 timesteps)
+        #     # count += 1
+        #     # plot_circle_norm_2d(target_pose[:][1], fig_2d, ax_2d, count)
+            
+        #     # Plot 3D visualization of ellipse norm
+        #     plot_circle_norm_3d(observed_target_pose, self.ax_3d)
+
+        # cv2.imshow('frame', cv_image)
+        # cv2.imshow('filtered_frame', filtered_frame)
+        # cv2.imshow('image_w_ellipse', image_w_ellipse)
+
+        # Undistort Image using intrinsic parameters
         undistorted_frame = cv2.undistort(cv_image, self.K, self.distortion)
 
         # Filter image for target
@@ -57,9 +109,10 @@ class circle_tracker(Node):
 
         # If ellipse is found, calculate target pose
         if np.all(ellipse_w_max_area != None):
-            # kalman_pose.predict()
+            self.kalman_pose.predict()
             observed_target_pose = determine_target_pose(self.K, ellipse_w_max_area)
-            # filter_target_pose = kalman_pose.update(observed_target_pose[0].flatten())
+            filter_target_pose = self.kalman_pose.update(np.reshape(observed_target_pose[0].flatten(), (1, -1)).T)
+            filter_target_pose = filter_target_pose.flatten()
             # print(filter_target_pose)
 
             # Plot 2D visualization of ellipse norm (plot resets after 500 timesteps)
@@ -67,7 +120,7 @@ class circle_tracker(Node):
             # plot_circle_norm_2d(target_pose[:][1], fig_2d, ax_2d, count)
             
             # Plot 3D visualization of ellipse norm
-            plot_circle_norm_3d(observed_target_pose, self.ax_3d)
+            plot_circle_norm_3d(filter_target_pose, self.ax_3d)
 
         cv2.imshow('frame', cv_image)
         cv2.imshow('filtered_frame', filtered_frame)
