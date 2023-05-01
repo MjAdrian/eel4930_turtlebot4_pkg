@@ -1,15 +1,15 @@
 import numpy as np
 import cv2
 
-from target_filter import *
-from target_pose_estimation import *
+from kalman_filter_test.target_filter import *
+from kalman_filter_test.target_pose_estimation import *
 # from KF import KF_pose_estimation
 
 # Find camera calibration   https://docs.opencv.org/3.4/dc/dbb/tutorial_py_calibration.html
 # Pose Estimation           https://docs.opencv.org/3.4/d7/d53/tutorial_py_pose.html
 
 
-if __name__ == '__main__':
+def main():
     vid = cv2.VideoCapture(0)
 
     # count = 0
@@ -79,3 +79,6 @@ if __name__ == '__main__':
 
     vid.release()
     cv2.destroyAllWindows()
+
+if __name__ == '__main__':
+    main()
