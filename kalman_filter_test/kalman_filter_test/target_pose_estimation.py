@@ -217,17 +217,6 @@ def plot_circle_norm_3d(circle_pose, ax):
     """Visualizes the normal of circle in 3D"""
     ax.quiver(circle_pose[0], circle_pose[1], circle_pose[2], circle_pose[3], circle_pose[4], circle_pose[5], alpha=1, color='b')
     ax.set_xlabel('X'), ax.set_ylabel('Y'), ax.set_zlabel('Z')
-    ax.set_xlim(-10, 10), ax.set_ylim(-10, 10), ax.set_zlim(-10, 10)
-    plt.pause(1/30)
-    ax.cla()
-
-def plot_circle_norm_3d_both_solutions(circles, ax):
-    """Visualizes the normal of circle in 3D"""
-    alpha = [1, 0.5]
-    color = ['b', 'r']
-    for i, circle in enumerate(circles):
-        ax.quiver(circle[0][0], circle[0][1], circle[0][2], circle[1][0], circle[1][1], circle[1][2], alpha=alpha[i], color=color[i])
-        ax.set_xlabel('X'), ax.set_ylabel('Y'), ax.set_zlabel('Z')
-        ax.set_xlim(-2.5, 2.5), ax.set_ylim(-2.5, 2.5), ax.set_zlim(-2.5, 2.5)
+    ax.set_xlim(-10.5, 10.5), ax.set_ylim(-10.5, 10.5), ax.set_zlim(-10.5, 10.5)
     plt.pause(1/30)
     ax.cla()
