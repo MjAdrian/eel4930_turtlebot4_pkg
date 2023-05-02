@@ -11,7 +11,7 @@ import cv2
 
 def filter_by_brightness2(frame):
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    _, threshold = cv2.threshold(gray_frame, 125, 255, cv2.THRESH_BINARY_INV)
+    _, threshold = cv2.threshold(gray_frame, 150, 200, cv2.THRESH_BINARY_INV)
     connectivity = 8
     analysis = cv2.connectedComponentsWithStats(threshold,
                                                 connectivity,
@@ -180,7 +180,6 @@ def find_target(frame, contours, heirarchy):
         
         if np.max(ellipse_area) > 500: #and np.max(ellipse_area) < 2500000:
             ellipse_w_max_area = ellipses[np.argmax(ellipse_area)]
-            image_w_ellipse = cv2.ellipse(frame, ellipse_w_max_area, (0,255,0), 2)
             max_area = np.max(ellipse_area)
     
-    return image_w_ellipse, ellipse_w_max_area, max_area
+    return ellipse_w_max_area, max_area
