@@ -9,7 +9,7 @@
 
     <!-- Navigation2 -->
     <include file="$(find-pkg-share nav2_bringup)/launch/bringup_launch.py">
-        <arg name="map" value="$(find-pkg-share autoro_navigation)/maps/maec_map.yaml"/>
+        <arg name="map" value="$(find-pkg-share autoro_navigation)/maps/maec_map_edited.yaml"/>
         <arg name="use_sim_time" value="True" />
         <arg name="params_file" value="$(find-pkg-share turtlebot3_navigation2)/param/waffle.yaml" />
     </include>

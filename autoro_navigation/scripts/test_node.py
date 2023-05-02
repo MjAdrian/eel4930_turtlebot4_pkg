@@ -33,7 +33,7 @@ class TestNode(Node):
         self.width_ = 0                 # Width of maps
         self.height_ = 0                # Height of maps
         self.occupied_threshold_ = 0.97 # A cell is occupied if cost >= occupied_threshold
-        self.coverage_threshold_ = 0.95 # Amount of the map the waypoint generator should attempt to cover
+        self.coverage_threshold_ = 0.90 # Amount of the map the waypoint generator should attempt to cover
         self.camera_fov_ = 130          # Camera field of view in degrees
         self.camera_radius_ = 80        # Max camera visible distance in cells
 
@@ -132,9 +132,9 @@ class TestNode(Node):
         # Define starting waypoint (not in waypoint list, but used to compute initial unseen_map)
         # Record points viewed from starting waypoint and update camera coverage
         initial_pose = CameraPose()
-        initial_pose.x_ = 28
-        initial_pose.y_ = 67
-        initial_pose.theta_ = 0
+        initial_pose.x_ = 350
+        initial_pose.y_ = 284
+        initial_pose.theta_ = 110
 
         new_visible_points = self.get_unique_visible_points(unseen_map, initial_pose, self.camera_fov_, self.camera_radius_, 0.5)
         num_unseen_points = num_unseen_points - len(new_visible_points)
@@ -191,6 +191,7 @@ class TestNode(Node):
 
             # Update coverage
             num_unseen_points = num_unseen_points - len(self.get_unique_visible_points(unseen_map, best_pose, self.camera_fov_, self.camera_radius_, 1))
+            camera_coverage = (initial_num_unseen_points - num_unseen_points) / initial_num_unseen_points
 
             self.visualize_map(unseen_map)
 
