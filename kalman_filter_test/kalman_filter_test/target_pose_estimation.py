@@ -8,8 +8,6 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
 
 def determine_target_pose(K: np.ndarray, ellipse: np.ndarray, circle_radius = 2):
     """Determines and returns taget pose in 3D
@@ -113,7 +111,7 @@ def determine_target_pose(K: np.ndarray, ellipse: np.ndarray, circle_radius = 2)
     e3x, e3y, e3z = P[2]
     R = circle_radius
 
-    c1 = R * np.sqrt((lambda_3 * (lambda_1 - lambda_2)) / (lambda_1 * (lambda_1 + lambda_3)))   # only needs to be calculated once
+    c1 = R * np.sqrt((lambda_3 * np.abs(lambda_1 - lambda_2)) / (lambda_1 * (lambda_1 + lambda_3)))   # only needs to be calculated once
     c2 = R * np.sqrt((lambda_1 * (lambda_2 + lambda_3)) / (lambda_3 * (lambda_1 + lambda_3)))
 
     # Solution 1
@@ -127,7 +125,7 @@ def determine_target_pose(K: np.ndarray, ellipse: np.ndarray, circle_radius = 2)
     circle_z_2 = -e1z * c1 + e3z * c2
 
     # Find circle normal - notation from paper above 
-    c3 = np.sqrt((lambda_1 - lambda_2) / (lambda_1 + lambda_3))
+    c3 = np.sqrt(np.abs(lambda_1 - lambda_2) / (lambda_1 + lambda_3))
     c4 = np.sqrt((lambda_2 + lambda_3) / (lambda_1 + lambda_3))
 
     # Solution 1
@@ -212,13 +210,24 @@ def plot_circle_norm_2d(circle_normal, fig, ax, time, time_lim = 500):
         ax[0].cla()
         ax[1].cla()
         ax[2].cla()
-    plt.pause(1/60)
+    plt.pause(1/30)
     plt.draw()
 
 def plot_circle_norm_3d(circle_pose, ax):
     """Visualizes the normal of circle in 3D"""
     ax.quiver(circle_pose[0], circle_pose[1], circle_pose[2], circle_pose[3], circle_pose[4], circle_pose[5], alpha=1, color='b')
     ax.set_xlabel('X'), ax.set_ylabel('Y'), ax.set_zlabel('Z')
-    ax.set_xlim(-2.5, 2.5), ax.set_ylim(-2.5, 2.5), ax.set_zlim(-2.5, 2.5)
-    plt.pause(1/60)
+    ax.set_xlim(-10, 10), ax.set_ylim(-10, 10), ax.set_zlim(-10, 10)
+    plt.pause(1/30)
+    ax.cla()
+
+def plot_circle_norm_3d_both_solutions(circles, ax):
+    """Visualizes the normal of circle in 3D"""
+    alpha = [1, 0.5]
+    color = ['b', 'r']
+    for i, circle in enumerate(circles):
+        ax.quiver(circle[0][0], circle[0][1], circle[0][2], circle[1][0], circle[1][1], circle[1][2], alpha=alpha[i], color=color[i])
+        ax.set_xlabel('X'), ax.set_ylabel('Y'), ax.set_zlabel('Z')
+        ax.set_xlim(-2.5, 2.5), ax.set_ylim(-2.5, 2.5), ax.set_zlim(-2.5, 2.5)
+    plt.pause(1/30)
     ax.cla()
