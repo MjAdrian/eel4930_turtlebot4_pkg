@@ -50,7 +50,7 @@ def main():
     navigator.waitUntilNav2Active()
 
     autoro_share = get_package_share_directory("autoro_navigation")
-    navigator.changeMap(f"{autoro_share}/maps/maec_map.yaml")
+    navigator.changeMap(f"{autoro_share}/maps/maec_map_edited.yaml")
 
     stamps = []
     poses = navigator.request_pose_list()
