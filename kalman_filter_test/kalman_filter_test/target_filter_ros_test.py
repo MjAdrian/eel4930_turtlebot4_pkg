@@ -17,16 +17,25 @@ class circle_tracker(Node):
         super().__init__('circle_tracker')
 
         # create subscription
+        # self.subscription = self.create_subscription(Image, '/color/preview/image', self.sub_callback, 10)
         self.subscription = self.create_subscription(Image, '/oakd_lite_camera/rgb_image', self.sub_callback, 10)
 
         # make OpenCV bridge
         self.bridge = CvBridge()
 
         # method variables
-        self.K = np.array([[8.982687231767234834e+02,0.000000000000000000e+00,5.549473975536263879e+02],
-                    [0.000000000000000000e+00,8.893338438389678231e+02,3.154322774257576043e+02],
-                    [0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
-        self.distortion = None
+        self.K = np.array([ [196.7876739501953, 0.0, 123.86207580566406],
+                            [0.0, 196.7876739501953, 127.05023193359375],
+                            [0.0, 0.0, 1.0]])
+        
+        # old K
+        # self.K = np.array([[8.982687231767234834e+02,0.000000000000000000e+00,5.549473975536263879e+02],
+        #             [0.000000000000000000e+00,8.893338438389678231e+02,3.154322774257576043e+02],
+        #             [0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
+
+        # this might be the distrotion matrix from the camera/info?
+        self.distortion = np.array([-4.0933966636657715, 9.190781593322754, 0.0012543922057375312, -0.0010304413735866547, -8.917245864868164, -4.187956809997559, 9.556831359863281, -9.303533554077148])
+        # self.distortion = None
 
         # continue flag for waitKey()
         self.continue_flag = True
@@ -56,41 +65,6 @@ class circle_tracker(Node):
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             print(e)
-
-        # TODO: add processing code
-                # Undistort Image using intrinsic parameters
-        # undistorted_frame = cv2.undistort(cv_image, self.K, self.distortion)
-
-        # # Filter image for target
-        # # filtered_frame = filter_by_color(undistorted_frame)
-        # filtered_frame = filter_by_brightness(undistorted_frame) # WIP
-
-        # # Detect contours of target
-        # frame_w_contours, contours, heirarchy = find_contours_connected_regions(filtered_frame)
-        # # canny_edges, contours, heirarchy = find_contours_canny(result)
-        # # _, contours, heirarchy = find_contours_adaptive_threshold(frame, result)
-
-        # # Calculate best fitting ellipse from contours
-        # image_w_ellipse, ellipse_w_max_area, max_area = find_target(cv_image, contours, heirarchy)
-
-        # # If ellipse is found, calculate target pose
-        # if np.all(ellipse_w_max_area != None):
-        #     # kalman_pose.predict()
-        #     observed_target_pose = determine_target_pose(self.K, ellipse_w_max_area)
-        #     print(observed_target_pose)
-        #     # filter_target_pose = kalman_pose.update(observed_target_pose[0].flatten())
-        #     # print(filter_target_pose)
-
-        #     # Plot 2D visualization of ellipse norm (plot resets after 500 timesteps)
-        #     # count += 1
-        #     # plot_circle_norm_2d(target_pose[:][1], fig_2d, ax_2d, count)
-            
-        #     # Plot 3D visualization of ellipse norm
-        #     plot_circle_norm_3d(observed_target_pose, self.ax_3d)
-
-        # cv2.imshow('frame', cv_image)
-        # cv2.imshow('filtered_frame', filtered_frame)
-        # cv2.imshow('image_w_ellipse', image_w_ellipse)
 
         # Undistort Image using intrinsic parameters
         undistorted_frame = cv2.undistort(cv_image, self.K, self.distortion)
