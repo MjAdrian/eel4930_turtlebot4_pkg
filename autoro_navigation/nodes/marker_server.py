@@ -20,6 +20,7 @@ import rclpy.logging
 import rich
 import yaml
 from ament_index_python.packages import get_package_share_directory
+from autoro_interfaces.srv import Path
 from geometry_msgs.msg import Pose, PoseArray
 from interactive_markers import InteractiveMarkerServer
 from rclpy.node import Node
@@ -54,6 +55,13 @@ class MarkerServer(Node):
         }
         self.poses = {}
         self.point_pub = self.create_publisher(PoseArray, "/patrol_path", 0)
+        self.path_srv = self.create_service(
+            Path, "/request_patrol_path", self.return_path
+        )
+
+    def return_path(self, _, response):
+        response.path = PoseArray(poses = list(self.poses.values()))
+        return response
 
     def set_server(self, server: InteractiveMarkerServer):
         self.server = server
