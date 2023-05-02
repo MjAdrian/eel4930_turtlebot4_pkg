@@ -13,7 +13,7 @@ from KF import EKF_pose_estimation, KF_pose_estimation, KF_ellipse_detection
 # Find camera calibration   https://docs.opencv.org/3.4/dc/dbb/tutorial_py_calibration.html
 # Pose Estimation           https://docs.opencv.org/3.4/d7/d53/tutorial_py_pose.html
 
-def main():
+if __name__ == '__main__':
     vid = cv2.VideoCapture(0)
 
     # count = 0
@@ -40,31 +40,31 @@ def main():
                                           b_std_meas=.1,
                                           theta_std_meas=.01)
     
-    # u_x = 1; u_y = 1; u_z = 1
-    # u_nx = 1; u_ny = 1; u_nz = 1
-    # extended_kalman_pose = EKF_pose_estimation(dt=0.1,
-    #                                            std_acc=1,
-    #                                            x_std_meas=1,
-    #                                            y_std_meas=1,
-    #                                            z_std_meas=1,
-    #                                            nx_std_meas=1,
-    #                                            ny_std_meas=1,
-    #                                            nz_std_meas=1)
+    u_x = 1; u_y = 1; u_z = 1
+    u_nx = 1; u_ny = 1; u_nz = 1
+    extended_kalman_pose = EKF_pose_estimation(dt=0.1,
+                                               std_acc=1,
+                                               x_std_meas=.05,
+                                               y_std_meas=.05,
+                                               z_std_meas=.05,
+                                               nx_std_meas=.05,
+                                               ny_std_meas=.05,
+                                               nz_std_meas=.05)
     
-    kalman_pose = KF_pose_estimation(dt=0.1,
-                                     u_x=1, 
-                                     u_y=1, 
-                                     u_z=1, 
-                                     u_nx=1, 
-                                     u_ny=1, 
-                                     u_nz=1, 
-                                     std_acc=1,
-                                     x_std_meas=1, 
-                                     y_std_meas=1, 
-                                     z_std_meas=1, 
-                                     nx_std_meas=1, 
-                                     ny_std_meas=1, 
-                                     nz_std_meas=1)
+    # kalman_pose = KF_pose_estimation(dt=0.1,
+    #                                  u_x=1, 
+    #                                  u_y=1, 
+    #                                  u_z=1, 
+    #                                  u_nx=1, 
+    #                                  u_ny=1, 
+    #                                  u_nz=1, 
+    #                                  std_acc=1,
+    #                                  x_std_meas=1, 
+    #                                  y_std_meas=1, 
+    #                                  z_std_meas=1, 
+    #                                  nx_std_meas=1, 
+    #                                  ny_std_meas=1, 
+    #                                  nz_std_meas=1)
     while True:
         ret, frame = vid.read()
 
@@ -77,8 +77,6 @@ def main():
 
         # Detect contours of target
         frame_w_contours, contours, heirarchy = find_contours_connected_regions(filtered_frame)
-        # canny_edges, contours, heirarchy = find_contours_canny(result)
-        # _, contours, heirarchy = find_contours_adaptive_threshold(frame, result)
 
         # Calculate best fitting ellipse from contours
         ellipse_w_max_area, max_area = find_target(frame, contours, heirarchy)
@@ -91,23 +89,24 @@ def main():
             best_ellipse = kalman_ellipse.update(ellipse_w_max_area)
 
             # Filter circle pose through extended Kalman filter
-            # observed_target_pose = determine_target_pose(K, best_ellipse)
+            observed_target_pose = determine_target_pose(K, best_ellipse)
+            print(observed_target_pose)
             
             # # Get movement input
-            # v_x = 0
-            # v_y = 0
-            # w_z = 0
+            v_x = 0
+            v_y = 0
+            w_z = 10
 
-            # u = [u_x, u_y, u_z, u_nx, u_ny, u_nz, v_x, v_y, w_z]    # input
-            # z = observed_target_pose[0].flatten().T                 # measurement
+            u = [u_x, u_y, u_z, u_nx, u_ny, u_nz, v_x, v_y, w_z]    # input
+            z = np.array([observed_target_pose[0].flatten()]).T     # measurement
             
-            # filter_target_pose = extended_kalman_pose.filter(u, z).flatten()
-            # print(filter_target_pose)
+            filter_target_pose = extended_kalman_pose.filter(u, z).flatten()
+            print(filter_target_pose)
 
             # Filter circle pose through Kalman filter
-            kalman_pose.predict()
-            observed_target_pose = determine_target_pose(K, best_ellipse)
-            filter_target_pose = kalman_pose.update(observed_target_pose[0].flatten().T).flatten()
+            # kalman_pose.predict()
+            # observed_target_pose = determine_target_pose(K, best_ellipse)
+            # filter_target_pose = kalman_pose.update(observed_target_pose[0].flatten().T).flatten()
 
             # Plot 2D visualization of ellipse norm (plot resets after 500 timesteps)
             # count += 1
@@ -115,12 +114,11 @@ def main():
             
             # Plot 3D visualization of ellipse norm
             plot_circle_norm_3d(filter_target_pose, ax_3d)
+            # plot_circle_norm_3d_both_solutions(filter_target_pose, ax_3d)
 
             # Visualize best fitting ellipse
             image_w_ellipse = cv2.ellipse(frame, ellipse_w_max_area, (0,255,0), 2)
-            image_w_ellipse = cv2.ellipse(frame, best_ellipse, (255,0,0), 2)
-
-        
+            image_w_ellipse = cv2.ellipse(frame, best_ellipse, (255,0,0), 2)        
 
         cv2.imshow('frame', frame)
         cv2.imshow('filtered frame', filtered_frame)
@@ -129,9 +127,5 @@ def main():
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-
     vid.release()
     cv2.destroyAllWindows()
-
-if __name__ == '__main__':
-    main()

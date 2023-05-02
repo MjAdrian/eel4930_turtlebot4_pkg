@@ -9,32 +9,6 @@
 import numpy as np
 import cv2
 
-def filter_by_brightness2(frame):
-    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    _, threshold = cv2.threshold(gray_frame, 150, 200, cv2.THRESH_BINARY_INV)
-    connectivity = 8
-    analysis = cv2.connectedComponentsWithStats(threshold,
-                                                connectivity,
-                                                cv2.CV_32S)
-    (totalLabels, label_ids, values, centroid) = analysis
-    output = np.zeros(gray_frame.shape, dtype="uint8")
-
-    for i in range(1, totalLabels):
-        area = values[i, cv2.CC_STAT_AREA]  
-    
-        if (area > 100) and (area < 10000):
-            
-            # Labels stores all the IDs of the components on the each pixel
-            # It has the same dimension as the threshold
-            # So we'll check the component
-            # then convert it to 255 value to mark it white
-            componentMask = (label_ids == i).astype("uint8") * 255
-            
-            # Creating the Final output mask
-            output = cv2.bitwise_or(output, componentMask)
-    
-    return output
-
 def filter_by_brightness(frame):
     """Fitlers frame for target's brightness""" 
     # Convert image to grayscale
@@ -56,8 +30,8 @@ def filter_by_brightness(frame):
     # Finds largest connected region
     mask = np.zeros(gray_frame.shape, dtype="uint8")
     for i in range(1, totalLabels):
-        area = values[i, cv2.CC_STAT_AREA]  
-        if (area > 200) and (area < 80000):
+        area = values[i, cv2.CC_STAT_AREA]
+        if (area > 200) and (area < 4000):
             # Labels stores all the IDs of the components on the each pixel
             # It has the same dimension as the threshold
             # So we'll check the component

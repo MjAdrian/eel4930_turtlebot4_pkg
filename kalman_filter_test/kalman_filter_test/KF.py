@@ -65,8 +65,9 @@ class EKF_pose_estimation(object):
             z: measurement vector
         """
         u_x, u_y, u_z, u_nx, u_ny, u_nz, v_x, v_y, w_z = u
-        [x_prev, v_x_prev, y_prev, v_y_prev, z_prev, v_z_prev,
-        nx_prev, v_nx_prev, ny_prev, n_ny_prev, nz_prev, n_nz_prev] = self.x
+
+        [x_prev, v_x_prev, y_prev, v_y_prev, z_prev, v_z_prev, 
+        nx_prev, v_nx_prev, ny_prev, n_ny_prev, nz_prev, n_nz_prev] = np.asarray(self.x).flatten().tolist()
         dt = self.dt
         theta = w_z * dt
 
@@ -82,6 +83,8 @@ class EKF_pose_estimation(object):
                             [u_ny*dt + v_y +  v_nx_prev*np.sin(theta) + n_ny_prev*np.cos(theta)],
                             [u_nz*(dt**2)/2],
                             [u_nz*dt]])
+
+
         self.G = np.matrix([[np.cos(theta), 0, -np.sin(theta), 0, 0, 0, 0, 0, 0, 0, 0, 0],
                             [0, np.cos(theta), 0, -np.sin(theta), 0, 0, 0, 0, 0, 0, 0, 0],
                             [np.sin(theta), 0, np.cos(theta), 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -95,14 +98,14 @@ class EKF_pose_estimation(object):
                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
+
         self.P = self.G @ self.P @ self.G.T + self.Q
         K = self.P @ self.H.T @ np.linalg.inv(self.H @ self.P @ self.H.T + self.R)
         self.x = self.x + K @ (z - self.H @ self.x)
         self.P = (np.eye(12) - K @ self.H) @ self.P
 
-        print(self.x)
-
-        return np.array([self.x[0], self.x[2], self.x[4], self.x[6], self.x[8], self.x[10]])
+        state = np.asarray(self.x).flatten().tolist()
+        return np.array([[state[0], state[2], state[4]], [state[6], state[8], state[10]]])
 
         
 
