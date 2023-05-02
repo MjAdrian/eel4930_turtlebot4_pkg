@@ -33,7 +33,7 @@ class TestNode(Node):
         self.width_ = 0                 # Width of maps
         self.height_ = 0                # Height of maps
         self.occupied_threshold_ = 0.97 # A cell is occupied if cost >= occupied_threshold
-        self.coverage_threshold_ = 0.90 # Amount of the map the waypoint generator should attempt to cover
+        self.coverage_threshold_ = 0.50 # Amount of the map the waypoint generator should attempt to cover
         self.camera_fov_ = 130          # Camera field of view in degrees
         self.camera_radius_ = 80        # Max camera visible distance in cells
 
@@ -98,18 +98,21 @@ class TestNode(Node):
         self.traversable_map_ = np.copy(self.search_map_)
         self.traversable_map_[occupied_mask] = 100
 
-        
+        '''
         self.visualize_map(self.map_)
         self.visualize_map(self.costmap_)
         self.visualize_map(self.binary_costmap_)
         self.visualize_map(self.search_map_)
-        self.visualize_map(self.traversable_map_)
+        self.visualize_map(self.traversable_map_)'''
 
         self.get_logger().info('All maps updated!')
 
 
     # TODO: Generate waypoints for search path based on maps
     def generate_waypoints(self):
+        # List of waypoints to traverse
+        waypoint_list = []
+
         # Local map to keep track of not yet visible cells
         # '0' for unseen cell (all empty cells right now), '100' for cells with obstacle
         unseen_map = np.copy(self.search_map_)
@@ -193,7 +196,13 @@ class TestNode(Node):
             num_unseen_points = num_unseen_points - len(self.get_unique_visible_points(unseen_map, best_pose, self.camera_fov_, self.camera_radius_, 1))
             camera_coverage = (initial_num_unseen_points - num_unseen_points) / initial_num_unseen_points
 
+            waypoint_list.append(best_pose)
+
             self.visualize_map(unseen_map)
+
+        return waypoint_list
+
+    # Sends goal poses to navigation2 stack
 
     # Colors map based on list of coordinate points (x,y) provided
     def shade_points(self, map, points, shade):
@@ -304,7 +313,8 @@ def main(args=None):
 
     node.set_initial_pose()
     node.update_maps()
-    node.generate_waypoints()
+    waypoint_list = node.generate_waypoints()
+    #node.go_through_waypoints(waypoint_list)
 
     rclpy.spin(node)
     node.destroy_node()
