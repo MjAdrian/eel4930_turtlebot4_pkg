@@ -13,15 +13,9 @@ import matplotlib.pyplot as plt
 import random
 from sklearn.cluster import DBSCAN
 from bresenham import bresenham
+import time
 
-from autoro_navigation.camera_pose import CameraPose
-
-# Support class, put somewhere else probably
-# class CameraPose():
-#     def __init__(self):
-#         self.x_ = 0
-#         self.y_ = 0
-#         self.theta_ = 0
+from libs_autoro_navigation.camera_pose import CameraPose
 
 class TestNode(Node):
     def __init__(self):
@@ -104,12 +98,12 @@ class TestNode(Node):
         self.traversable_map_ = np.copy(self.search_map_)
         self.traversable_map_[occupied_mask] = 100
 
-        '''
+        
         self.visualize_map(self.map_)
         self.visualize_map(self.costmap_)
         self.visualize_map(self.binary_costmap_)
         self.visualize_map(self.search_map_)
-        self.visualize_map(self.traversable_map_)'''
+        self.visualize_map(self.traversable_map_)
 
         self.get_logger().info('All maps updated!')
 
@@ -141,18 +135,18 @@ class TestNode(Node):
         initial_pose.x_ = 28
         initial_pose.y_ = 67
         initial_pose.theta_ = 0
-        new_visible_points = self.get_unique_visible_points(unseen_map, initial_pose, self.camera_fov_, self.camera_radius_, 1)
+
+        new_visible_points = self.get_unique_visible_points(unseen_map, initial_pose, self.camera_fov_, self.camera_radius_, 0.5)
         num_unseen_points = num_unseen_points - len(new_visible_points)
         camera_coverage = (initial_num_unseen_points - num_unseen_points) / initial_num_unseen_points
         self.shade_points(unseen_map, new_visible_points, 10)
 
+        # Testing: Unseen map should be updated with initial waypoint points
         self.visualize_map(unseen_map)
 
-        ###### TODO #####
-        # Randomly propose waypoints within binary_costmap_, can optimize number of points
+        # Randomly propose waypoints within binary_costmap_
         # Choose waypoints that can see the most unseen points
         # Recluster unseen points, repeat process on all clusters until coverage is acceptable
-        # Path plan through proposed waypoints
         theta_list = [0, 45, 90, 135, 180, 225, 270, 315]
         shade = 20
         while camera_coverage < self.coverage_threshold_:
@@ -164,7 +158,7 @@ class TestNode(Node):
                 ### TODO: Distance check ###
                 randw = 0
                 randh = 0
-                while traversable_map[randh, randw] != 0:
+                while self.traversable_map_[randh, randw] != 0:
                     rand = random.randint(0, self.width_*self.height_-1)
                     randw = rand % self.width_
                     randh = (int)(rand / self.width_)
@@ -184,16 +178,19 @@ class TestNode(Node):
             pose_scores = []    # Keeps track of the number of new visible points from each pose
             for camera_pose in pose_list:
                 print("Testing pose: (", camera_pose.x_, ",", camera_pose.y_, ",", camera_pose.theta_, ")")
-                new_visible_points = self.get_unique_visible_points(unseen_map, camera_pose, self.camera_fov_, self.camera_radius_)
+                new_visible_points = self.get_unique_visible_points(unseen_map, camera_pose, self.camera_fov_, self.camera_radius_, 0.5)
                 pose_scores.append(len(new_visible_points))
 
             # Choose the pose that produces the greatest coverage and update unseen_map
             # Update coverage percentage as well
             best_pose_idx = pose_scores.index(max(pose_scores))
-            new_visible_points = self.get_unique_visible_points(unseen_map, camera_pose, self.camera_fov_, self.camera_radius_)
-            for point in new_visible_points:
-                unseen_map[point[1], point[0]] = shade
+            best_pose = pose_list[best_pose_idx]
+            new_visible_points = self.get_unique_visible_points(unseen_map, best_pose, self.camera_fov_, self.camera_radius_, 0.5)
+            self.shade_points(unseen_map, new_visible_points, shade)
             shade = shade + 10
+
+            # Update coverage
+            num_unseen_points = num_unseen_points - len(self.get_unique_visible_points(unseen_map, best_pose, self.camera_fov_, self.camera_radius_, 1))
 
             self.visualize_map(unseen_map)
 
@@ -219,7 +216,7 @@ class TestNode(Node):
         ray_length = 2*np.sqrt(self.width_**2 + self.height_**2)
 
         # Iterate through angles in FOV in resolution*degree increments
-        for theta in np.linspace(theta_ccw, theta_cw, fov*resolution):
+        for theta in np.linspace(theta_ccw, theta_cw, (int)(fov*resolution)):
             ray_endpoint_x = (int)(np.cos(np.radians(theta)) * ray_length) + camera_x
             ray_endpoint_y = (int)(np.sin(np.radians(theta)) * ray_length) + camera_y
 
