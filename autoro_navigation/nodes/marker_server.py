@@ -168,7 +168,7 @@ class MarkerServer(Node):
                 "The interactive marker server has not yet been initialized."
             )
 
-        self.poses[uniq_id] = viz_marker.pose
+        self.poses[uniq_id] = marker.pose
         server.insert(marker, feedback_callback=self.process_feedback)
         server.applyChanges()
 

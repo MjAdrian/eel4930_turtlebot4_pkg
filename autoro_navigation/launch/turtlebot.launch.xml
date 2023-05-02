@@ -17,4 +17,8 @@
     <node pkg="rviz2" exec="rviz2" name="rviz2" args="-d $(find-pkg-share autoro_navigation)/rviz/nav2_default_view.rviz">
         <param name="use_sim_time" value="True" />
     </node>
+
+    <!-- Marker server -->
+    <node pkg="autoro_navigation" exec="marker_server.py" name="marker_server">
+    </node>
 </launch>

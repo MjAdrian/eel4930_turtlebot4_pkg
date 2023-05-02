@@ -30,6 +30,7 @@ install(PROGRAMS
     scripts/get_map_test.py
     scripts/occupancy_grid_test.py
     nodes/marker_server.py
+    nodes/navigation.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
