@@ -24,6 +24,7 @@ setup(
         'console_scripts': [
             'circle_pose_test = kalman_filter_test.target_filter_test:main',
             'node_circle_test = kalman_filter_test.target_filter_ros_test:main',
+            'test_other_method = kalman_filter_test.test_other_method:main'
         ],
     },
 )

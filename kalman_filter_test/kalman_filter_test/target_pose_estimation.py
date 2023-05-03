@@ -148,7 +148,7 @@ def determine_target_pose(K: np.ndarray, ellipse: np.ndarray, circle_radius = 2)
     X = -B/A * Z
     Y = -C/A * Z
 
-    print(X,Y,Z)
+    # print(X,Y,Z)
     
     return np.array([[[X, Y, Z], [circle_norm_1[0], circle_norm_1[1], circle_norm_1[2]]],
                      [[X, Y, Z], [circle_norm_2[0], circle_norm_2[1], circle_norm_2[2]]]])

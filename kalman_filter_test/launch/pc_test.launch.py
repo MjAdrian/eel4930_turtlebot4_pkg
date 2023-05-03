@@ -10,15 +10,16 @@ def generate_launch_description():
         #     output='screen'
         # ),
         Node(
-            package='tb4_movement',
-            executable='static_aiming',
-            name='static_aiming',
-            output='screen'
-        ),
-        Node(
             package='kalman_filter_test',
             executable='node_circle_test',
             name='node_circle_test',
             output='screen'
         ),
+        Node(
+            package='tb4_movement',
+            executable='static_aiming',
+            name='static_aiming',
+            output='screen'
+        ),
+
     ])
