@@ -41,7 +41,7 @@ class Aim_Y(Node):
 
         self.ang_serv.ChangeDutyCycle(duty)
         time.sleep(t)
-        self.ang_serv.stop()
+        self.ang_serv.ChangeDutyCycle(0)
         self.cur_ang = self.cur_ang + req.angle
 
         resp.cur_ang = self.cur_ang
@@ -53,6 +53,7 @@ def main(args=None):
     rclpy.init(args=args)
     aim = Aim_Y()
     rclpy.spin(aim)
+    aim.ang_serv.stop()
     aim.destroy_node()
     rclpy.shutdown()
 

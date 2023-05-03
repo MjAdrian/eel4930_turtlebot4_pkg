@@ -1,13 +1,13 @@
 <launch>
-    <arg name="simulation" default="True" />
+    <arg name="simulation" default="true" />
 
     <!-- Turtlebot3 simulation -->
-    <include file="$(find-pkg-share gazebo_ros)/launch/gzserver.launch.py">
+    <!-- <include file="$(find-pkg-share gazebo_ros)/launch/gzserver.launch.py">
         <arg name="world" value="$(find-pkg-share autoro_navigation)/worlds/mil_building.world" />
     </include>
     <include file="$(find-pkg-share gazebo_ros)/launch/gzclient.launch.py"></include>
     <include file="$(find-pkg-share turtlebot3_gazebo)/launch/robot_state_publisher.launch.py"></include>
-    <include file="$(find-pkg-share turtlebot3_gazebo)/launch/spawn_turtlebot3.launch.py"></include>
+    <include file="$(find-pkg-share turtlebot3_gazebo)/launch/spawn_turtlebot3.launch.py"></include> -->
 
     <!-- Navigation2 -->
     <include file="$(find-pkg-share nav2_bringup)/launch/bringup_launch.py">

@@ -20,6 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            "aim_y = gun_nodes.aim_y:main",
+            "shoot = gun_nodes.shoot:main"
         ],
     },
 )
