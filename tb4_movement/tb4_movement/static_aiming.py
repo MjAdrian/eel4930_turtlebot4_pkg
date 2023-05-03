@@ -37,15 +37,14 @@ class StaticAiming(Node):
         self.target_y = msg.y
         self.target_z = msg.z
         self.mode = 'found'
-        self.timer.change_period(0.1)
+        #self.timer.change_period(0.1)
         self.calculate_angles()
-        print('pose updated')
 
     # Inputs: target x,y,z pose
     # Outputs: azimuth and elevation of target
     def calculate_angles(self):
-        azimuth = np.rad2deg(np.arctan(self.target_x))
-        elevation = np.rad2deg(np.arctan(-self.target_y))
+        azimuth = np.rad2deg(np.arctan((self.target_x + 320) / 122.8))
+        elevation = np.rad2deg(np.arctan((-self.target_y + 240) / 174.4))
         print("azimuth:", azimuth)
         print("elevation:", elevation)
         return azimuth, elevation
