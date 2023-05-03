@@ -16,7 +16,10 @@ class OakDLitePublisher(Node):
         self.bridge = CvBridge()
 
         # Make object
+        print('new pipe')
         self.pipeline = dai.Pipeline()
+        #self.device = dai.Device(self.pipeline, dai.UsbSpeed.HIGH)
+
 
         # Set up colored images
         cam_rgb = self.pipeline.create(dai.node.ColorCamera)
@@ -32,7 +35,7 @@ class OakDLitePublisher(Node):
         cam_rgb.preview.link(xout_rgb.input)
 
         # set up device instance
-        self.device = dai.Device(self.pipeline)
+        self.device = dai.Device(self.pipeline,dai.UsbSpeed.HIGH)
         self.q_rgb = self.device.getOutputQueue("rgb", 4, blocking=False)
 
     def publish_camera_data(self):
