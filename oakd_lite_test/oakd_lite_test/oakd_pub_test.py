@@ -9,7 +9,7 @@ class OakDLitePublisher(Node):
     def __init__(self):
         super().__init__('oakd_lite_publisher')
 
-        # create publisher
+        # create publisher 
         self.publisher_ = self.create_publisher(Image, '/oakd_lite_camera/rgb_image', 10)
         
         # set up CV Bridge
