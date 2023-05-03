@@ -102,11 +102,11 @@ class TestNode(Node):
         self.traversable_map_[occupied_mask] = 100
 
         
-        self.visualize_map(self.map_)
+        '''self.visualize_map(self.map_)
         self.visualize_map(self.costmap_)
         self.visualize_map(self.binary_costmap_)
         self.visualize_map(self.search_map_)
-        self.visualize_map(self.traversable_map_)
+        self.visualize_map(self.traversable_map_)'''
 
         self.get_logger().info('All maps updated!')
 
@@ -126,28 +126,6 @@ class TestNode(Node):
             for x in range(len(self.traversable_map_[0])):
                 if self.traversable_map_[y, x] == 0:
                     traversable_points.append((x, y))
-
-        # Get initial number of unseen points
-        # num_unseen_points = 0
-        # for row in unseen_map:
-        #     for point in row:
-        #         if point == 0:
-        #             num_unseen_points = num_unseen_points + 1
-        # initial_num_unseen_points = num_unseen_points
-
-        # Define starting waypoint (not in waypoint list, but used to compute initial unseen_map)
-        # Record points viewed from starting waypoint and update camera coverage
-        # initial_pose = CameraPose()
-        # initial_pose.x_ = 291
-        # initial_pose.y_ = 357
-        # initial_pose.theta_ = 220
-        # new_visible_points = self.get_unique_visible_points(unseen_map, initial_pose, self.camera_fov_, self.camera_radius_, 0.5)
-        # num_unseen_points = num_unseen_points - len(new_visible_points)
-        # camera_coverage = (initial_num_unseen_points - num_unseen_points) / initial_num_unseen_points
-        # self.shade_points(unseen_map, new_visible_points, 10)
-
-        # Testing: Unseen map should be updated with initial waypoint points
-        #self.visualize_map(unseen_map)
 
         # Randomly propose waypoints within binary_costmap_
         # Choose waypoints that can see the most unseen points
@@ -210,6 +188,28 @@ class TestNode(Node):
 
         self.visualize_map(unseen_map)
         return waypoint_list
+    
+    def generate_manual_waypoints(self):
+        unseen_map = np.copy(self.search_map_)
+        x_list = [329, 34, 89, 246]
+        y_list = [84, 168, 186, 198]
+        theta_list = [135, 0, 315, 90]
+        camera_pose_list = []
+        nav_pose_list = []
+        shade = 10
+        for i in range(len(x_list)):
+            camera_pose = CameraPose()
+            camera_pose.x_ = x_list[i]
+            camera_pose.y_ = y_list[i]
+            camera_pose.theta_ = theta_list[i]
+            camera_pose_list.append(camera_pose)
+            new_visible_points = self.get_unique_visible_points(unseen_map, camera_pose, self.camera_fov_, self.camera_radius_, 1)
+            self.shade_points(unseen_map, new_visible_points, shade)
+            shade = shade + 10
+            nav_pose_list.append(self.camera2mil_pose(camera_pose))
+        self.visualize_map(unseen_map)
+
+        return camera_pose_list
 
     # Sends goal poses to navigation2 stack
 
@@ -350,7 +350,8 @@ def main(args=None):
     #node.set_initial_pose()
     node.update_maps()
     #node.test_waypoint()
-    waypoint_list = node.generate_waypoints()
+    #waypoint_list = node.generate_waypoints()
+    waypoint_list = node.generate_manual_waypoints()
     node.go_through_waypoints(waypoint_list)
 
     rclpy.spin(node)

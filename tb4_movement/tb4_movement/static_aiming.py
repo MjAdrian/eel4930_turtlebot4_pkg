@@ -2,7 +2,6 @@
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Twist
 
@@ -17,9 +16,9 @@ class StaticAiming(Node):
         self.target_point = None
         self.prev_target_point = None
 
-        # PD parameters
-        self.P = 0.01
-        self.D = 0.002
+        # PD control parameters
+        self.P = 0.05
+        self.D = 0.001
 
         self.target_pose_subscription = self.create_subscription(
             Point,
@@ -28,6 +27,7 @@ class StaticAiming(Node):
             10)
         self.twist_publisher = self.create_publisher(Twist, 'cmd_vel', 10)
 
+    # Aiming control happens here
     def target_pose_callback(self, msg: Point):
         self.prev_target_point = self.target_point
         self.target_point = msg
@@ -42,19 +42,25 @@ class StaticAiming(Node):
                 control = - self.P*azimuth + self.D*(prev_azimuth - azimuth)
                 self.sendTwist(control)
 
+        self.sendElevation(elevation)
+
     # Inputs: target x,y,z pose
     # Outputs: azimuth and elevation of target
     def calculate_angles(self, point: Point):
         azimuth = np.rad2deg(np.arctan((point.x - 320) / 122.8))
         elevation = np.rad2deg(np.arctan((-point.y + 240) / 174.4))
-        print("azimuth:", azimuth)
-        print("elevation:", elevation)
+        self._logger.info("azimuth: {}".format(azimuth))
+        self._logger.info("elevation: {}".format(elevation))
         return azimuth, elevation
     
     def sendTwist(self, angular_velocity):
         twist_msg = Twist()
         twist_msg.angular.z = angular_velocity
         self.twist_publisher.publish(twist_msg)
+
+    def sendElevation(self, elevation_angle):
+        # Send gun elevation angle command here
+        return
 
 def main(args=None):
     rclpy.init(args=args)
