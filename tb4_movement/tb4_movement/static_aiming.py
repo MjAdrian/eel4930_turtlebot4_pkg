@@ -7,7 +7,6 @@ from geometry_msgs.msg import Point
 from geometry_msgs.msg import Twist
 
 import numpy as np
-from simple_pid import PID
 
 class StaticAiming(Node):
     def __init__(self):
@@ -15,9 +14,12 @@ class StaticAiming(Node):
 
         # Robot will search by rotating slowly until a target is found. Once a target message appears, the mode will switch to 'aiming'
         self.mode = 'search'
-        self.target_x = 0
-        self.target_y = 0
-        self.target_z = 0
+        self.target_point = None
+        self.prev_target_point = None
+
+        # PD parameters
+        self.P = 0.01
+        self.D = 0.002
 
         self.target_pose_subscription = self.create_subscription(
             Point,
@@ -26,53 +28,33 @@ class StaticAiming(Node):
             10)
         self.twist_publisher = self.create_publisher(Twist, 'cmd_vel', 10)
 
-        self.pid = PID(0.1, 0.0, 0.05, setpoint = 0)
-        self.pid.sample_time = 0.01
-
     def target_pose_callback(self, msg: Point):
-        self.target_x = msg.x
-        self.target_y = msg.y
-        self.target_z = msg.z
-        self.mode = 'found'
-        azimuth, elevation = self.calculate_angles()
+        self.prev_target_point = self.target_point
+        self.target_point = msg
+        azimuth, elevation = self.calculate_angles(self.target_point)
+        prev_azimuth, prev_elevation = self.calculate_angles(self.prev_target_point)
 
-        # Control movement
-        twist_msg = Twist()
-        if np.abs(azimuth) > 5:
-            twist_msg.angular.z = -azimuth / 150
-            self.twist_publisher.publish(twist_msg)
-
+        # If current and previous points are in similar location (reject random noise)
+        if np.abs(prev_azimuth - azimuth) < 10:
+            # If error is sufficiently high (more than 10 degrees off)
+            if np.abs(azimuth) > 10:
+                # Control movement (Sort of PD control)
+                control = - self.P*azimuth + self.D*(prev_azimuth - azimuth)
+                self.sendTwist(control)
 
     # Inputs: target x,y,z pose
     # Outputs: azimuth and elevation of target
-    def calculate_angles(self):
-        azimuth = np.rad2deg(np.arctan((self.target_x - 320) / 122.8))
-        elevation = np.rad2deg(np.arctan((-self.target_y + 240) / 174.4))
+    def calculate_angles(self, point: Point):
+        azimuth = np.rad2deg(np.arctan((point.x - 320) / 122.8))
+        elevation = np.rad2deg(np.arctan((-point.y + 240) / 174.4))
         print("azimuth:", azimuth)
         print("elevation:", elevation)
         return azimuth, elevation
     
-    # def search_action(self):
-    #     self.get_logger().info(self.mode)
-    #     if(self.mode == 'search'):
-    #         twist_msg = Twist()
-    #         linear_speed = 0
-    #         angular_speed = 1
-    #         twist_msg.linear.x = linear_speed * 1.0
-    #         twist_msg.angular.z = angular_speed * 0.2
-
-    #         self.twist_publisher.publish(twist_msg)
-    #     else:
-    #         self.horizontal_aim_action()
-
-    # def horizontal_aim_action(self):
-    #     twist_msg = Twist()
-    #     azimuth, _ = self.calculate_angles()
-    #     while azimuth > 5:
-    #         angular_velocity = -self.pid(azimuth)/25
-    #         twist_msg.angular.z = angular_velocity
-    #         self.twist_publisher.publish(twist_msg)
-    #         azimuth, _ = self.calculate_angles()
+    def sendTwist(self, angular_velocity):
+        twist_msg = Twist()
+        twist_msg.angular.z = angular_velocity
+        self.twist_publisher.publish(twist_msg)
 
 def main(args=None):
     rclpy.init(args=args)
