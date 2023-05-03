@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
+from geometry_msgs.msg import PoseStamped
 import cv2
 import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
@@ -19,6 +20,9 @@ class circle_tracker(Node):
         # create subscription
         # self.subscription = self.create_subscription(Image, '/color/preview/image', self.sub_callback, 10)
         self.subscription = self.create_subscription(Image, '/oakd_lite_camera/rgb_image', self.sub_callback, 10)
+
+        self.publisher = self.create_publisher(PoseStamped, '/target_pose', 10)
+
 
         # make OpenCV bridge
         self.bridge = CvBridge()
@@ -73,6 +77,18 @@ class circle_tracker(Node):
                                           b_std_meas=.1,
                                           theta_std_meas=.01)
 
+        self.extended_kalman_pose = EKF_pose_estimation(dt=0.1,
+                                               std_acc=1,
+                                               x_std_meas=.05,
+                                               y_std_meas=.05,
+                                               z_std_meas=.05,
+                                               nx_std_meas=.05,
+                                               ny_std_meas=.05,
+                                               nz_std_meas=.05)
+        
+        self.u_x = 1; self.u_y = 1; self.u_z = 1
+        self.u_nx = 1; self.u_ny = 1; self.u_nz = 1
+
 
     def sub_callback(self, msg):
         try:
@@ -80,46 +96,56 @@ class circle_tracker(Node):
         except CvBridgeError as e:
             print(e)
 
-        # Undistort Image using intrinsic parameters
+        pose_msg = PoseStamped()
+
+                # Undistort Image using intrinsic parameters
         undistorted_frame = cv2.undistort(cv_image, self.K, self.distortion)
 
         # Filter image for target
-        filtered_frame = filter_by_color(undistorted_frame)
-        # filtered_frame = filter_by_brightness(undistorted_frame)
+        # filtered_frame = filter_by_color(undistorted_frame)
+        filtered_frame = filter_by_brightness(undistorted_frame)
 
         # Detect contours of target
         frame_w_contours, contours, heirarchy = find_contours_connected_regions(filtered_frame)
-        # canny_edges, contours, heirarchy = find_contours_canny(result)
-        # _, contours, heirarchy = find_contours_adaptive_threshold(frame, result)
 
         # Calculate best fitting ellipse from contours
-        _, ellipse_w_max_area, max_area = find_target(cv_image, contours, heirarchy)
+        ellipse_w_max_area, max_area = find_target(cv_image, contours, heirarchy)
 
         image_w_ellipse = cv_image
         # If ellipse is found, calculate target pose
         if np.all(ellipse_w_max_area != None):
             # Filter ellipse through Kalman filter
-            self.kalman_ellipse.predict()
+            self. kalman_ellipse.predict()
             best_ellipse = self.kalman_ellipse.update(ellipse_w_max_area)
 
             # Filter circle pose through extended Kalman filter
-            # observed_target_pose = determine_target_pose(K, best_ellipse)
+            observed_target_pose = determine_target_pose(self.K, best_ellipse)
+            # print(observed_target_pose)
             
             # # Get movement input
-            # v_x = 0
-            # v_y = 0
-            # w_z = 0
+            v_x = 0
+            v_y = 0
+            w_z = 0
 
-            # u = [u_x, u_y, u_z, u_nx, u_ny, u_nz, v_x, v_y, w_z]    # input
-            # z = observed_target_pose[0].flatten().T                 # measurement
+            u = [self.u_x, self.u_y, self.u_z, self.u_nx, self.u_ny, self.u_nz, v_x, v_y, w_z]    # input
+            z = np.array([observed_target_pose[0].flatten()]).T     # measurement
             
-            # filter_target_pose = extended_kalman_pose.filter(u, z).flatten()
+            filter_target_pose = self.extended_kalman_pose.filter(u, z).flatten()
             # print(filter_target_pose)
 
+            pose_msg.pose.position.x = filter_target_pose[0]
+            pose_msg.pose.position.y = filter_target_pose[1]
+            pose_msg.pose.position.z = filter_target_pose[2]
+            pose_msg.pose.orientation.x = filter_target_pose[3]
+            pose_msg.pose.orientation.y = filter_target_pose[4]
+            pose_msg.pose.orientation.z = filter_target_pose[5]
+            self.publisher.publish(pose_msg)
+
+
             # Filter circle pose through Kalman filter
-            self.kalman_pose.predict()
-            observed_target_pose = determine_target_pose(self.K, best_ellipse)
-            filter_target_pose = self.kalman_pose.update(observed_target_pose[0].flatten().T).flatten()
+            # kalman_pose.predict()
+            # observed_target_pose = determine_target_pose(K, best_ellipse)
+            # filter_target_pose = kalman_pose.update(observed_target_pose[0].flatten().T).flatten()
 
             # Plot 2D visualization of ellipse norm (plot resets after 500 timesteps)
             # count += 1
@@ -127,11 +153,11 @@ class circle_tracker(Node):
             
             # Plot 3D visualization of ellipse norm
             plot_circle_norm_3d(filter_target_pose, self.ax_3d)
+            # plot_circle_norm_3d_both_solutions(filter_target_pose, ax_3d)
 
             # Visualize best fitting ellipse
             image_w_ellipse = cv2.ellipse(cv_image, ellipse_w_max_area, (0,255,0), 2)
-            image_w_ellipse = cv2.ellipse(cv_image, best_ellipse, (255,0,0), 2)
-
+            image_w_ellipse = cv2.ellipse(cv_image, best_ellipse, (255,0,0), 2)        
 
         cv2.imshow('frame', cv_image)
         cv2.imshow('filtered_frame', filtered_frame)

@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import TwistStamped, PoseStamped
+from geometry_msgs.msg import Twist, PoseStamped
 from math import atan2
 
 class movement_controller(Node):
@@ -15,8 +15,8 @@ class movement_controller(Node):
         super().__init__('TB4_movement_controller')
 
         # link up publishers and/or subscribers
-        self.publisher = self.create_publisher(TwistStamped, 'cmd_vel', 10)
-        self.subscriber = self.create_subscription(PoseStamped, 'current_pose_goal', self.pose_callback, 10)
+        self.publisher = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.subscriber = self.create_subscription(PoseStamped, '/target_pose', self.pose_callback, 10)
 
         # method variables
         self.previous_pose = PoseStamped()
@@ -39,23 +39,25 @@ class movement_controller(Node):
         
         # calculate velocities
         # assuming that this node recieves msg every 0.1 seconds
-        vel_x = (msg.pose.position.x - self.previous_pose.position.x)/0.1
+        vel_x = (msg.pose.position.x - self.previous_pose.pose.position.x)/0.1
         ang_vel_z = (current_theta - self.previous_theta)/0.1
 
         # create twist message
-        twist_msg = TwistStamped()
+        twist_msg = Twist()
 
         # store values into twist msg
-        twist_msg.header = msg.header
-        twist_msg.twist.linear.x = vel_x
-        twist_msg.twist.angular.z = ang_vel_z
+        # twist_msg.header = msg.header
+        twist_msg.linear.x = vel_x
+        twist_msg.angular.z = ang_vel_z
 
         # store pose for later calculation
         self.previous_pose = msg
         self.previous_theta = current_theta
 
         # publish and log msg
-        self.publisher.publish(twist_msg)
+        if vel_x >= 0: 
+            print(twist_msg)
+            self.publisher.publish(twist_msg)
         # self.get_logger().info('Publishing cmd_vel: linear=%f, angular=%f' % (linear_speed, angular_speed))
 
 def main(args=None):

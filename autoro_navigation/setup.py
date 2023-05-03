@@ -27,6 +27,7 @@ setup(
             'get_costmap_test = autoro_navigation.get_costmap_test:main',
             'get_map_test = autoro_navigation.get_map_test:main',
             'talker = autoro_navigation.publisher_member_function:main',
+            'static_aiming = autoro_navigation.static_aiming:main',
         ],
     },
 )

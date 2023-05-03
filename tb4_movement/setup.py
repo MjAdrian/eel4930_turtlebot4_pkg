@@ -20,6 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'tb4_movement = tb4_movement.tb4_movement:main',
+            'static_aiming = tb4_movement.static_aiming:main'
         ],
     },
 )
