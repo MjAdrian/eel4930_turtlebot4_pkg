@@ -34,7 +34,7 @@ class TestNode(Node):
         self.width_ = 0                 # Width of maps
         self.height_ = 0                # Height of maps
         self.map_resolution_ = 0        # Resolution of map (m/cell)
-        self.occupied_threshold_ = 0.95 # A cell is occupied if cost >= occupied_threshold
+        self.occupied_threshold_ = 0.50 # A cell is occupied if cost >= occupied_threshold
         self.coverage_threshold_ = 0.10 # Amount of the map the waypoint generator should attempt to cover
         self.camera_fov_ = 130          # Camera field of view in degrees
         self.camera_radius_ = 80        # Max camera visible distance in cells
@@ -101,12 +101,12 @@ class TestNode(Node):
         self.traversable_map_ = np.copy(self.search_map_)
         self.traversable_map_[occupied_mask] = 100
 
-        '''
+        
         self.visualize_map(self.map_)
         self.visualize_map(self.costmap_)
         self.visualize_map(self.binary_costmap_)
         self.visualize_map(self.search_map_)
-        self.visualize_map(self.traversable_map_)'''
+        self.visualize_map(self.traversable_map_)
 
         self.get_logger().info('All maps updated!')
 
@@ -128,24 +128,23 @@ class TestNode(Node):
                     traversable_points.append((x, y))
 
         # Get initial number of unseen points
-        num_unseen_points = 0
-        for row in unseen_map:
-            for point in row:
-                if point == 0:
-                    num_unseen_points = num_unseen_points + 1
-        initial_num_unseen_points = num_unseen_points
+        # num_unseen_points = 0
+        # for row in unseen_map:
+        #     for point in row:
+        #         if point == 0:
+        #             num_unseen_points = num_unseen_points + 1
+        # initial_num_unseen_points = num_unseen_points
 
         # Define starting waypoint (not in waypoint list, but used to compute initial unseen_map)
         # Record points viewed from starting waypoint and update camera coverage
-        initial_pose = CameraPose()
-        initial_pose.x_ = 291
-        initial_pose.y_ = 357
-        initial_pose.theta_ = 220
-
-        new_visible_points = self.get_unique_visible_points(unseen_map, initial_pose, self.camera_fov_, self.camera_radius_, 0.5)
-        num_unseen_points = num_unseen_points - len(new_visible_points)
-        camera_coverage = (initial_num_unseen_points - num_unseen_points) / initial_num_unseen_points
-        self.shade_points(unseen_map, new_visible_points, 10)
+        # initial_pose = CameraPose()
+        # initial_pose.x_ = 291
+        # initial_pose.y_ = 357
+        # initial_pose.theta_ = 220
+        # new_visible_points = self.get_unique_visible_points(unseen_map, initial_pose, self.camera_fov_, self.camera_radius_, 0.5)
+        # num_unseen_points = num_unseen_points - len(new_visible_points)
+        # camera_coverage = (initial_num_unseen_points - num_unseen_points) / initial_num_unseen_points
+        # self.shade_points(unseen_map, new_visible_points, 10)
 
         # Testing: Unseen map should be updated with initial waypoint points
         #self.visualize_map(unseen_map)
@@ -154,28 +153,28 @@ class TestNode(Node):
         # Choose waypoints that can see the most unseen points
         # Recluster unseen points, repeat process on all clusters until coverage is acceptable
         theta_list = [0, 45, 90, 135, 180, 225, 270, 315]
-        shade = 20
+        shade = 5
         y_lower_limit = 0
-        y_upper_limit = 20
+        y_upper_limit = 40
         while y_upper_limit+20 < self.height_:
-            # Generate list of 10 random map points within traversable area and sufficiently far from each other
+            # Generate list of 5 random map points within traversable area and sufficiently far from each other
             test_pose_list = []
             for i in range(0,5):
                 randx = random.randint(0, self.width_-1)
                 randy = random.randint(y_lower_limit, y_upper_limit)
                 counter = 1
-                point_in_range = True
+                point_exists_in_range = True
                 while self.traversable_map_[randy, randx] != 0:     # While point is not traversable
                     # If there are no feasible points in the range (more than 10 points have been tested)
                     if counter > 10:
-                        point_in_range = False
+                        point_exists_in_range = False
                         break
                     # Test another point and increment counter
                     randx = random.randint(0, self.width_-1)
                     randy = random.randint(y_lower_limit, y_upper_limit)
                     counter = counter + 1
 
-                if point_in_range:
+                if point_exists_in_range:
                     # Add 8 poses (8 angles) for each point
                     for theta_idx in range(0,7):
                         camera_pose = CameraPose()
@@ -185,8 +184,8 @@ class TestNode(Node):
                         test_pose_list.append(camera_pose)
 
             # Readjust limits
-            y_lower_limit = y_lower_limit + 20
-            y_upper_limit = y_upper_limit + 20
+            y_lower_limit = y_lower_limit + 40
+            y_upper_limit = y_upper_limit + 40
 
             if len(test_pose_list) > 0:
                 # Iterate through 8 angles for every random point, choose the pose that
@@ -203,7 +202,7 @@ class TestNode(Node):
                 best_pose = test_pose_list[best_pose_idx]
                 new_visible_points = self.get_unique_visible_points(unseen_map, best_pose, self.camera_fov_, self.camera_radius_, 0.25)
                 self.shade_points(unseen_map, new_visible_points, shade)
-                shade = shade + 10
+                shade = shade + 5
 
                 waypoint_list.append(best_pose)
 
@@ -294,12 +293,12 @@ class TestNode(Node):
         img = ax.imshow(map, cmap='rainbow')
         plt.show()
 
-    def camera2nav_pose(self, camera_pose: CameraPose):
-        q_x, q_y, q_z, q_w = tf_transformations.quaternion_from_euler(0.0, 0.0, 0)
+    def camera2mil_pose(self, camera_pose: CameraPose):
+        q_x, q_y, q_z, q_w = tf_transformations.quaternion_from_euler(0.0, 0.0, camera_pose.theta_)
         nav_pose = PoseStamped()
         nav_pose.header.frame_id = 'map'
-        nav_pose.pose.position.x = (float)(camera_pose.x_ - 29) * self.map_resolution_#(5.86/self.width_)
-        nav_pose.pose.position.y = (float)(-camera_pose.y_ + 71) * self.map_resolution_#(6.28/self.width_)
+        nav_pose.pose.position.x = (camera_pose.x_*self.map_resolution_) - 8.67#(float)(camera_pose.x_ - 276) * self.map_resolution_#(5.86/self.width_)
+        nav_pose.pose.position.y = (camera_pose.y_*self.map_resolution_) - 10.5#(float)(camera_pose.y_ - 359) * self.map_resolution_#(6.28/self.width_)
         nav_pose.pose.position.z = 0.0
         nav_pose.pose.orientation.x = q_x
         nav_pose.pose.orientation.y = q_y
@@ -307,12 +306,11 @@ class TestNode(Node):
         nav_pose.pose.orientation.w = q_w
         return nav_pose
 
-
     # Send initial pose to navigation stack
     # Blocks execution until pose set successfully
     def set_initial_pose(self):
         # Set initial pose
-        q_x, q_y, q_z, q_w = tf_transformations.quaternion_from_euler(0.0, 0.0, 0.0)
+        q_x, q_y, q_z, q_w = tf_transformations.quaternion_from_euler(0.0, 0.0, 215.0)
         initial_pose = PoseStamped()
         initial_pose.header.frame_id = 'map'
         initial_pose.header.stamp = self.nav_.get_clock().now().to_msg()
@@ -331,18 +329,27 @@ class TestNode(Node):
     def go_through_waypoints(self, waypoint_list):
         nav_waypoints = []
         for waypoint in waypoint_list:
-            nav_waypoints.append(self.camera2nav_pose(waypoint))
+            nav_waypoints.append(self.camera2mil_pose(waypoint))
             print(nav_waypoints[-1])
             #print("Nav Waypoint: (", nav_waypoints[-1].pose.position.x, nav_waypoints[-1].pose.position.y, ")")
         self.nav_.goThroughPoses(nav_waypoints)
 
+    def test_waypoint(self):
+        camera_pose = CameraPose()
+        camera_pose.x_ = 252
+        camera_pose.y_ = 120
+        camera_pose.theta_ = 0
+        goal_pose = self.camera2mil_pose(camera_pose)
+        self.nav_.goToPose(goal_pose)
+        
+
 def main(args=None):
     rclpy.init(args=args)
     node = TestNode()
-    # autoro_share = get_package_share_directory("autoro_navigation")
-    # node.nav_.changeMap(f"{autoro_share}/maps/maec_map_edited.yaml")
+
     #node.set_initial_pose()
     node.update_maps()
+    #node.test_waypoint()
     waypoint_list = node.generate_waypoints()
     node.go_through_waypoints(waypoint_list)
 
