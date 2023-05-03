@@ -29,21 +29,24 @@ class StaticAiming(Node):
         self.pid = PID(0.1, 0.0, 0.05, setpoint = 0)
         self.pid.sample_time = 0.01
 
-        #self.timer = self.create_timer(0.5, self.search_action)
-
-
     def target_pose_callback(self, msg: Point):
         self.target_x = msg.x
         self.target_y = msg.y
         self.target_z = msg.z
         self.mode = 'found'
-        #self.timer.change_period(0.1)
-        self.calculate_angles()
+        azimuth, elevation = self.calculate_angles()
+
+        # Control movement
+        twist_msg = Twist()
+        if np.abs(azimuth) > 5:
+            twist_msg.angular.z = -azimuth / 150
+            self.twist_publisher.publish(twist_msg)
+
 
     # Inputs: target x,y,z pose
     # Outputs: azimuth and elevation of target
     def calculate_angles(self):
-        azimuth = np.rad2deg(np.arctan((self.target_x + 320) / 122.8))
+        azimuth = np.rad2deg(np.arctan((self.target_x - 320) / 122.8))
         elevation = np.rad2deg(np.arctan((-self.target_y + 240) / 174.4))
         print("azimuth:", azimuth)
         print("elevation:", elevation)
