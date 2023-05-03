@@ -32,7 +32,7 @@ class Shoot(Node):
         self.trig_serv.ChangeDutyCycle(0)
 
     def callback(self, req, resp):
-        press_trigger = (60.0 / 180.0) * 10.0
+        press_trigger = (55.0 / 180.0) * 10.0
 
         self.trig_serv.ChangeDutyCycle(press_trigger)
         time.sleep(req.time)
@@ -49,11 +49,15 @@ class Shoot(Node):
 def main(args=None):
     rclpy.init(args=args)
     shoot = Shoot()
-    rclpy.spin(shoot)
-    shoot.trig_serv.ChangeDutyCycle((93/180)*10)
-    shoot.trig_serv.stop()
-    shoot.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(shoot)
+    except KeyboardInterrupt:
+        print("Exiting Program")
+    finally:
+        shoot.trig_serv.ChangeDutyCycle((93/180)*10)
+        shoot.trig_serv.stop()
+        shoot.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == "__main__":

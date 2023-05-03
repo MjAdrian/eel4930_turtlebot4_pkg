@@ -36,16 +36,28 @@ class Aim_Y(Node):
         if(req.angle > 0):
             duty = 3.75
         else:
-            duty = 11.25
-        t = (abs(req.angle)/360.0)*(179/19)*.75
+            duty = 10.0
+
+        if(abs(self.cur_ang + req.angle) > 50):
+            resp.cur_ang = self.cur_ang
+            print(self.cur_ang)
+            return resp
+
+
+        if(abs(req.angle) < 5):
+            t = (abs(req.angle)/360.0)*(179/19)*.75
+            self.cur_ang = self.cur_ang + req.angle
+        else:
+            t = (5/360.0)*(179/19)*.75
+            self.cur_ang = self.cur_ang + (req.angle/abs(req.angle))*5
 
         self.ang_serv.ChangeDutyCycle(duty)
         time.sleep(t)
         self.ang_serv.ChangeDutyCycle(0)
-        self.cur_ang = self.cur_ang + req.angle
 
         resp.cur_ang = self.cur_ang
 
+        print(self.cur_ang)
         return resp
 
    

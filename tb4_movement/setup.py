@@ -21,7 +21,9 @@ setup(
     entry_points={
         'console_scripts': [
             'tb4_movement = tb4_movement.tb4_movement:main',
-            'static_aiming = tb4_movement.static_aiming:main'
+            'static_aiming = tb4_movement.static_aiming:main',
+            'static_aiming_y = tb4_movement.static_aiming_y:main',
+            'shoot = tb4_movement.shoot_aimed:main'
         ],
     },
 )
