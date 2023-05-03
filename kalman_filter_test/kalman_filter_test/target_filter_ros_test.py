@@ -103,8 +103,8 @@ class circle_tracker(Node):
         undistorted_frame = cv2.undistort(cv_image, self.K, self.distortion)
 
         # Filter image for target
-        # filtered_frame = filter_by_color(undistorted_frame)
-        filtered_frame = filter_by_brightness(undistorted_frame)
+        filtered_frame = filter_by_color(undistorted_frame)
+        # filtered_frame = filter_by_brightness(undistorted_frame)
 
         # Detect contours of target
         frame_w_contours, contours, heirarchy = find_contours_connected_regions(filtered_frame)
@@ -168,7 +168,12 @@ class circle_tracker(Node):
 
             # Visualize best fitting ellipse
             image_w_ellipse = cv2.ellipse(cv_image, ellipse_w_max_area, (0,255,0), 2)
-            image_w_ellipse = cv2.ellipse(cv_image, best_ellipse, (255,0,0), 2)        
+            if best_ellipse[1][0] >= 0 and best_ellipse[1][1] >= 0:
+                image_w_ellipse = cv2.ellipse(cv_image, best_ellipse, (255,0,0), 2)
+            else:
+                print("Invalid ellipse dimensions:", best_ellipse)
+
+            # image_w_ellipse = cv2.ellipse(cv_image, best_ellipse, (255,0,0), 2)        
 
         cv2.imshow('frame', cv_image)
         cv2.imshow('filtered_frame', filtered_frame)

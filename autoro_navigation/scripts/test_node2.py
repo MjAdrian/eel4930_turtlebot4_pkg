@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 import rclpy
 from rclpy.node import Node
+from rclpy.duration import Duration
 
 from nav2_simple_commander.robot_navigator import BasicNavigator
 from nav2_msgs.srv import GetCostmap
@@ -38,6 +39,7 @@ class TestNode(Node):
         self.coverage_threshold_ = 0.10 # Amount of the map the waypoint generator should attempt to cover
         self.camera_fov_ = 130          # Camera field of view in degrees
         self.camera_radius_ = 80        # Max camera visible distance in cells
+        self.y_increment = 40
 
         self.search_waypoints = []      # List of waypoints robot needs to traverse to see all points on map
 
@@ -133,7 +135,7 @@ class TestNode(Node):
         theta_list = [0, 45, 90, 135, 180, 225, 270, 315]
         shade = 5
         y_lower_limit = 0
-        y_upper_limit = 40
+        y_upper_limit = self.y_increment
         while y_upper_limit+20 < self.height_:
             # Generate list of 5 random map points within traversable area and sufficiently far from each other
             test_pose_list = []
@@ -162,8 +164,8 @@ class TestNode(Node):
                         test_pose_list.append(camera_pose)
 
             # Readjust limits
-            y_lower_limit = y_lower_limit + 40
-            y_upper_limit = y_upper_limit + 40
+            y_lower_limit = y_lower_limit + self.y_increment
+            y_upper_limit = y_upper_limit + self.y_increment
 
             if len(test_pose_list) > 0:
                 # Iterate through 8 angles for every random point, choose the pose that
@@ -305,6 +307,19 @@ class TestNode(Node):
         nav_pose.pose.orientation.z = q_z
         nav_pose.pose.orientation.w = q_w
         return nav_pose
+    
+    def camera2nav_pose(self, camera_pose: CameraPose):
+        q_x, q_y, q_z, q_w = tf_transformations.quaternion_from_euler(0.0, 0.0, camera_pose.theta_)
+        nav_pose = PoseStamped()
+        nav_pose.header.frame_id = 'map'
+        nav_pose.pose.position.x = (camera_pose.x_*self.map_resolution_) - 1.29#(float)(camera_pose.x_ - 276) * self.map_resolution_#(5.86/self.width_)
+        nav_pose.pose.position.y = (camera_pose.y_*self.map_resolution_) - 2.43#(float)(camera_pose.y_ - 359) * self.map_resolution_#(6.28/self.width_)
+        nav_pose.pose.position.z = 0.0
+        nav_pose.pose.orientation.x = q_x
+        nav_pose.pose.orientation.y = q_y
+        nav_pose.pose.orientation.z = q_z
+        nav_pose.pose.orientation.w = q_w
+        return nav_pose
 
     # Send initial pose to navigation stack
     # Blocks execution until pose set successfully
@@ -332,7 +347,20 @@ class TestNode(Node):
             nav_waypoints.append(self.camera2mil_pose(waypoint))
             print(nav_waypoints[-1])
             #print("Nav Waypoint: (", nav_waypoints[-1].pose.position.x, nav_waypoints[-1].pose.position.y, ")")
-        self.nav_.goThroughPoses(nav_waypoints)
+
+        # Patrol function
+        while True:
+            for waypoint in nav_waypoints:
+                self.nav_.goToPose(waypoint)
+                i = 0
+                while not self.nav_.isTaskComplete():
+                    feedback = self.nav_.getFeedback()
+                    if feedback and i%10 == 0:
+                        duration = Duration.from_msg(feedback.estimated_time_remaining).nanoseconds / 1e9
+                        print('Estimated time of arrival: ' + '{0:.0f}'.format(duration) + ' seconds.')
+                        if duration < 1.5:
+                            self.nav_.cancelTask()
+                    i = i + 1
 
     def test_waypoint(self):
         camera_pose = CameraPose()
@@ -350,8 +378,8 @@ def main(args=None):
     #node.set_initial_pose()
     node.update_maps()
     #node.test_waypoint()
-    #waypoint_list = node.generate_waypoints()
-    waypoint_list = node.generate_manual_waypoints()
+    waypoint_list = node.generate_waypoints()
+    #waypoint_list = node.generate_manual_waypoints()
     node.go_through_waypoints(waypoint_list)
 
     rclpy.spin(node)
