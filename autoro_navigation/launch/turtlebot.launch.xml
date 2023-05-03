@@ -3,7 +3,7 @@
 
     <!-- Turtlebot3 simulation -->
     <include file="$(find-pkg-share gazebo_ros)/launch/gzserver.launch.py">
-        <arg name="world" value="$(find-pkg-share autoro_navigation)/worlds/mil_building.world" />
+        <arg name="world" value="$(find-pkg-share autoro_navigation)/worlds/mil_building_edited.world" />
     </include>
     <include file="$(find-pkg-share gazebo_ros)/launch/gzclient.launch.py"></include>
     <include file="$(find-pkg-share turtlebot3_gazebo)/launch/robot_state_publisher.launch.py"></include>
