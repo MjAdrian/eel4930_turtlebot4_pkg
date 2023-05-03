@@ -24,7 +24,7 @@ class OakDLitePublisher(Node):
         xout_rgb.setStreamName("rgb")
 
         # image properties
-        cam_rgb.setPreviewSize(300, 300)
+        cam_rgb.setPreviewSize(1280, 800)
         cam_rgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
         cam_rgb.setInterleaved(False)
 
