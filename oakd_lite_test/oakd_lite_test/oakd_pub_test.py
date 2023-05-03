@@ -25,12 +25,18 @@ class OakDLitePublisher(Node):
         xout_rgb.setStreamName("rgb")
 
         # Set up depth images
+        cam_left = self.pipeline.create(dai.node.MonoCamera)
+        cam_right = self.pipeline.create(dai.node.MonoCamera)
         cam_depth = self.pipeline.create(dai.node.StereoDepth)
         xout_depth = self.pipeline.create(dai.node.XLinkOut)
         xout_depth.setStreamName("depth")
 
         cam_depth.setConfidenceThreshold(200)
         cam_depth.setMedianFilter(dai.StereoDepthProperties.MedianFilter.KERNEL_7x7)
+
+        # set up left and right cameras
+        cam_left.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
+        cam_right.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
 
         # image properties
         cam_rgb.setPreviewSize(300, 300)
@@ -41,6 +47,8 @@ class OakDLitePublisher(Node):
         cam_rgb.preview.link(xout_rgb.input)
 
         # set up output link for depth images
+        cam_left.out.link(cam_depth.left)
+        cam_right.out.link(cam_depth.right)
         cam_depth.depth.link(xout_depth.input)
 
         # set up device instance
