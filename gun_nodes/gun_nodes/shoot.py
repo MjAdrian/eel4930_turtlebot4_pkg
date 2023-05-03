@@ -29,14 +29,17 @@ class Shoot(Node):
         self.trig_serv = GPIO.PWM(SERVO2_PIN, pwm_frequency)
 
         self.trig_serv.start(5)
+        self.trig_serv.ChangeDutyCycle(0)
 
     def callback(self, req, resp):
-        press_trigger = (71 / 180.0) * 10
+        press_trigger = (60.0 / 180.0) * 10.0
 
         self.trig_serv.ChangeDutyCycle(press_trigger)
         time.sleep(req.time)
     
         self.trig_serv.ChangeDutyCycle((93/180)*10)
+        time.sleep(.25)
+        self.trig_serv.ChangeDutyCycle(0)
 
         resp.success = True
 

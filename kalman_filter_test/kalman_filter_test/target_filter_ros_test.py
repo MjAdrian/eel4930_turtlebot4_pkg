@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Point
 import cv2
 import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
@@ -22,6 +22,7 @@ class circle_tracker(Node):
         self.subscription = self.create_subscription(Image, '/oakd_lite_camera/rgb_image', self.sub_callback, 10)
 
         self.publisher = self.create_publisher(PoseStamped, '/target_pose', 10)
+        self.point_pub = self.create_publisher(Point, '/target_point', 10)
 
 
         # make OpenCV bridge
@@ -115,6 +116,15 @@ class circle_tracker(Node):
         # If ellipse is found, calculate target pose
         if np.all(ellipse_w_max_area != None):
             # Filter ellipse through Kalman filter
+
+            out_Point = Point()
+            out_Point.x = ellipse_w_max_area[0]
+            out_Point.y = ellipse_w_max_area[1]
+
+            self.point_pub.publish(out_Point)
+
+
+
             self. kalman_ellipse.predict()
             best_ellipse = self.kalman_ellipse.update(ellipse_w_max_area)
 
