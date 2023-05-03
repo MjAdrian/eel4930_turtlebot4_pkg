@@ -47,7 +47,7 @@ class StaticAiming(Node):
         return azimuth, elevation
     
     def search_action(self):
-        print(self.mode)
+        self.get_logger().info(self.mode)
         if(self.mode == 'search'):
             twist_msg = Twist()
             linear_speed = 0
@@ -71,7 +71,6 @@ class StaticAiming(Node):
 def main(args=None):
     rclpy.init(args=args)
     static_aiming = StaticAiming()
-
 
     try:
         rclpy.spin(static_aiming)
