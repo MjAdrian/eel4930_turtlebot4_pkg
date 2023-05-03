@@ -118,8 +118,9 @@ class circle_tracker(Node):
             # Filter ellipse through Kalman filter
 
             out_Point = Point()
-            out_Point.x = ellipse_w_max_area[0]
-            out_Point.y = ellipse_w_max_area[1]
+            out_Point.x = ellipse_w_max_area[0][0]
+            out_Point.y = ellipse_w_max_area[0][1]
+            out_Point.z = 0.0
 
             self.point_pub.publish(out_Point)
 
